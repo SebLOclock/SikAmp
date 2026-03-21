@@ -1,11 +1,11 @@
 <script setup>
-// winamp-sik - Main application component
+import PlayerDebug from '@/components/player/PlayerDebug.vue'
 </script>
 
 <template>
   <main class="app">
     <h1>winamp-sik</h1>
-    <p>Lecteur audio en cours de développement</p>
+    <PlayerDebug />
   </main>
 </template>
 
