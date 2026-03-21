@@ -1,0 +1,92 @@
+# generated: 2026-03-21
+# last_updated: 2026-03-21T18:30:00
+# project: winamp-sik
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-03-21
+last_updated: 2026-03-21T18:30:00
+project: winamp-sik
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1 : Premier Lancement & Lecture Audio
+  epic-1: in-progress
+  1-1-initialisation-du-projet-tauri-vue-js: review
+  1-2-moteur-audio-et-lecture-de-base: backlog
+  1-3-interface-skinnee-classic-faithful: backlog
+  1-4-controles-de-lecture-complets: backlog
+  1-5-drag-drop-et-playlist-basique: backlog
+  1-6-jingle-au-lancement: backlog
+  1-7-gestion-gracieuse-des-erreurs: backlog
+  1-8-accessibilite-clavier-et-lecteurs-d-ecran: backlog
+  1-9-double-mode-de-rendu-et-redimensionnement: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2 : Crossfade — La Feature Signature
+  epic-2: backlog
+  2-1-crossfade-equal-power-entre-morceaux: backlog
+  2-2-configuration-de-la-duree-du-crossfade: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3 : Gestion des Playlists
+  epic-3: backlog
+  3-1-creer-et-editer-des-playlists: backlog
+  3-2-sauvegarder-et-charger-des-playlists: backlog
+  3-3-menu-contextuel-playlist: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4 : Skins Personnalises
+  epic-4: backlog
+  4-1-parseur-de-skins-wsz-et-chargement: backlog
+  4-2-selecteur-de-skins-et-retour-au-defaut: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5 : Distribution, Installation & Mises a Jour
+  epic-5: backlog
+  5-1-pipeline-ci-cd-multi-plateforme: backlog
+  5-2-publication-de-releases: backlog
+  5-3-auto-update-signe: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6 : Landing Page
+  epic-6: backlog
+  6-1-landing-page-statique-avec-telechargement-par-os: backlog
+  epic-6-retrospective: optional
+
+  # Epic 7 : Formulaire de Satisfaction
+  epic-7: backlog
+  7-1-formulaire-de-satisfaction-opt-in: backlog
+  epic-7-retrospective: optional
