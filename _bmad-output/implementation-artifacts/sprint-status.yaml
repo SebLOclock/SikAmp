@@ -1,5 +1,5 @@
 # generated: 2026-03-21
-# last_updated: 2026-03-21T19:15:00
+# last_updated: 2026-03-21T20:33:00
 # project: winamp-sik
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-21
-last_updated: 2026-03-21T19:15:00
+last_updated: 2026-03-21T20:33:00
 project: winamp-sik
 project_key: NOKEY
 tracking_system: file-system
@@ -45,8 +45,8 @@ development_status:
   # Epic 1 : Premier Lancement & Lecture Audio
   epic-1: in-progress
   1-1-initialisation-du-projet-tauri-vue-js: done
-  1-2-moteur-audio-et-lecture-de-base: review
-  1-3-interface-skinnee-classic-faithful: backlog
+  1-2-moteur-audio-et-lecture-de-base: done
+  1-3-interface-skinnee-classic-faithful: review
   1-4-controles-de-lecture-complets: backlog
   1-5-drag-drop-et-playlist-basique: backlog
   1-6-jingle-au-lancement: backlog

@@ -1,41 +1,93 @@
 <script setup>
-import PlayerDebug from '@/components/player/PlayerDebug.vue'
+import { onMounted } from 'vue'
+import { useSkinStore } from '@/stores/useSkinStore'
+import { usePlaylistStore } from '@/stores/usePlaylistStore'
+import PlayerDisplay from '@/components/player/PlayerDisplay.vue'
+import SeekBar from '@/components/player/SeekBar.vue'
+import TransportControls from '@/components/player/TransportControls.vue'
+import VolumeSlider from '@/components/player/VolumeSlider.vue'
+import ActionBar from '@/components/player/ActionBar.vue'
+import PlaylistPanel from '@/components/playlist/PlaylistPanel.vue'
+
+const skinStore = useSkinStore()
+const playlistStore = usePlaylistStore()
+
+function handlePrev() {
+  playlistStore.playPrevious()
+}
+
+function handleNext() {
+  playlistStore.playNext()
+}
+
+onMounted(() => {
+  skinStore.loadDefaultSkin()
+  playlistStore.init()
+})
 </script>
 
 <template>
-  <main class="app">
-    <h1>winamp-sik</h1>
-    <PlayerDebug />
+  <main class="app" :style="{ backgroundColor: skinStore.colors.background }">
+    <div class="player-window">
+      <PlayerDisplay />
+      <SeekBar />
+      <div class="controls-row">
+        <TransportControls @prev="handlePrev" @next="handleNext" />
+        <VolumeSlider />
+      </div>
+      <ActionBar />
+    </div>
+    <PlaylistPanel />
   </main>
 </template>
 
 <style>
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.4;
   font-weight: 400;
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+  color: #00FF00;
+  background-color: #29292E;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+</style>
+
+<style scoped>
 .app {
   margin: 0;
-  padding-top: 10vh;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  text-align: center;
+  min-height: 100vh;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
+.player-window {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.controls-row > :first-child {
+  flex: 1;
+}
+
+.controls-row > :last-child {
+  flex-shrink: 0;
 }
 </style>
