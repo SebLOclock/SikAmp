@@ -25,4 +25,8 @@ serde_json = "1"
 lofty = "0.22"
 tauri-plugin-store = "2"
 tokio = { version = "1", features = ["rt"] }
+walkdir = "2"
+
+[dev-dependencies]
+tempfile = "3"
 

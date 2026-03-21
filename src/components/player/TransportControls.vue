@@ -31,7 +31,7 @@ const hoveredButton = ref(null)
 const pressedButton = ref(null)
 
 const isDisabled = computed(() => {
-  return playerStore.isStopped && !playerStore.currentTrack
+  return playlistStore.isEmpty || (playerStore.isStopped && !playerStore.currentTrack)
 })
 
 const isPrevDisabled = computed(() => {
@@ -132,7 +132,7 @@ function accessibleAction(btnId) {
 onMounted(() => draw())
 
 watch(
-  () => [playerStore.isPlaying, playerStore.isPaused, playerStore.currentTrack, skinStore.renderMode, playlistStore.canPlayPrevious],
+  () => [playerStore.isPlaying, playerStore.isPaused, playerStore.currentTrack, skinStore.renderMode, playlistStore.canPlayPrevious, playlistStore.isEmpty],
   () => draw()
 )
 </script>
@@ -148,11 +148,11 @@ watch(
       @mouseleave="handleMouseLeave"
     />
     <!-- Accessible hidden buttons -->
-    <button class="sr-only-btn" aria-label="Précédent" :disabled="isPrevDisabled" @click="accessibleAction('prev')" />
-    <button class="sr-only-btn" aria-label="Lecture" :disabled="isDisabled" @click="accessibleAction('play')" />
-    <button class="sr-only-btn" aria-label="Pause" :disabled="isDisabled" @click="accessibleAction('pause')" />
-    <button class="sr-only-btn" aria-label="Stop" :disabled="isDisabled" @click="accessibleAction('stop')" />
-    <button class="sr-only-btn" aria-label="Suivant" :disabled="isDisabled" @click="accessibleAction('next')" />
+    <button class="sr-only-btn" aria-label="Précédent" :disabled="isPrevDisabled" :aria-disabled="isPrevDisabled" @click="accessibleAction('prev')" />
+    <button class="sr-only-btn" aria-label="Lecture" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('play')" />
+    <button class="sr-only-btn" aria-label="Pause" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('pause')" />
+    <button class="sr-only-btn" aria-label="Stop" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('stop')" />
+    <button class="sr-only-btn" aria-label="Suivant" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('next')" />
   </div>
 </template>
 

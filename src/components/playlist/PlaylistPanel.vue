@@ -1,6 +1,14 @@
 <script setup>
+import { ref, watch } from 'vue'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useSkinStore } from '@/stores/useSkinStore'
+
+defineProps({
+  isDragging: {
+    type: Boolean,
+    default: false
+  }
+})
 
 const playlistStore = usePlaylistStore()
 const skinStore = useSkinStore()
@@ -11,6 +19,25 @@ function formatDuration(seconds) {
   const secs = Math.floor(seconds % 60)
   return `${mins}:${secs.toString().padStart(2, '0')}`
 }
+
+const ariaAnnouncement = ref('')
+let previousTrackCount = playlistStore.trackCount
+
+watch(() => playlistStore.trackCount, (newCount) => {
+  const added = newCount - previousTrackCount
+  if (added > 0) {
+    ariaAnnouncement.value = `${added} morceau${added > 1 ? 'x' : ''} ajouté${added > 1 ? 's' : ''} à la playlist`
+  }
+  previousTrackCount = newCount
+})
+
+watch(() => playlistStore.isEmpty, (isEmpty, wasEmpty) => {
+  if (wasEmpty && !isEmpty) {
+    ariaAnnouncement.value = 'Contrôles de lecture activés'
+  } else if (!wasEmpty && isEmpty) {
+    ariaAnnouncement.value = 'Contrôles de lecture désactivés'
+  }
+})
 
 function handleDoubleClick(index) {
   playlistStore.playTrack(index)
@@ -27,6 +54,15 @@ function handleDoubleClick(index) {
       color: skinStore.colors.playlistText
     }"
   >
+    <!-- Drag overlay -->
+    <div
+      v-if="isDragging"
+      class="drag-overlay"
+      :style="{ borderColor: skinStore.colors.activeTrack || '#00FF00' }"
+    >
+      <span class="drag-overlay-text">Dépose tes fichiers ici</span>
+    </div>
+
     <!-- Header -->
     <div class="playlist-header">
       <span class="col-number">#</span>
@@ -57,9 +93,18 @@ function handleDoubleClick(index) {
     </div>
 
     <!-- Empty state -->
-    <div v-else class="playlist-empty">
-      Glisse ta musique ici
+    <div v-else class="playlist-empty" aria-label="Zone de dépôt de fichiers">
+      <div class="empty-icon">🎵</div>
+      <div>Glisse ta musique ici</div>
     </div>
+
+    <!-- Status bar -->
+    <div v-if="!playlistStore.isEmpty" class="playlist-status">
+      {{ playlistStore.trackCount }} morceau{{ playlistStore.trackCount > 1 ? 'x' : '' }}
+    </div>
+
+    <!-- ARIA live region for announcements -->
+    <div aria-live="polite" class="sr-only" role="status">{{ ariaAnnouncement }}</div>
   </div>
 </template>
 
@@ -71,6 +116,27 @@ function handleDoubleClick(index) {
   max-height: 300px;
   overflow-y: auto;
   border-top: 1px solid #3F3F44;
+  position: relative;
+}
+
+.drag-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 255, 0, 0.08);
+  border: 2px solid;
+  pointer-events: none;
+  transition: opacity 0.05s ease;
+}
+
+.drag-overlay-text {
+  color: #00FF00;
+  font-size: 14px;
+  font-weight: bold;
+  text-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
 }
 
 .playlist-header {
@@ -134,11 +200,38 @@ function handleDoubleClick(index) {
 
 .playlist-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 80px;
+  gap: 4px;
   color: #555;
   font-style: italic;
   font-size: 13px;
+}
+
+.empty-icon {
+  font-size: 24px;
+  font-style: normal;
+}
+
+.playlist-status {
+  padding: 2px 8px;
+  border-top: 1px solid #333;
+  color: #888;
+  font-size: 10px;
+  text-align: right;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 </style>
