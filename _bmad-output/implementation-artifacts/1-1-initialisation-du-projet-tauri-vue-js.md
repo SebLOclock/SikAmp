@@ -1,6 +1,6 @@
 # Story 1.1 : Initialisation du Projet Tauri + Vue.js
 
-Status: review
+Status: done
 
 ## Story
 

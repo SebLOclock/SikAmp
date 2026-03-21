@@ -1,1 +1,1 @@
-// Tauri IPC commands will be registered here
+pub mod file_commands;
