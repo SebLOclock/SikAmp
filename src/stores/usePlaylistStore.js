@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia'
+import { invoke } from '@tauri-apps/api/core'
 import { usePlayerStore } from './usePlayerStore'
 import audioEngine from '@/engine/audioEngine'
 
@@ -7,7 +8,7 @@ let endedListenerAttached = false
 function extractTrackInfo(filePath) {
   const fileName = filePath.split('/').pop().split('\\').pop()
   const name = fileName.replace(/\.[^.]+$/, '')
-  return { path: filePath, title: name, artist: 'Unknown', duration: 0 }
+  return { path: filePath, title: name, artist: 'Inconnu', duration: 0, bitrate: null, sampleRate: null, channels: null }
 }
 
 export const usePlaylistStore = defineStore('playlist', {
@@ -28,7 +29,13 @@ export const usePlaylistStore = defineStore('playlist', {
 
     trackCount: (state) => state.tracks.length,
 
-    isEmpty: (state) => state.tracks.length === 0
+    isEmpty: (state) => state.tracks.length === 0,
+
+    canPlayPrevious: (state) => {
+      if (state.tracks.length === 0 || state.currentIndex < 0) return false
+      if (state.repeatMode === 'none') return state.currentIndex > 0
+      return true
+    }
   },
 
   actions: {
@@ -38,8 +45,32 @@ export const usePlaylistStore = defineStore('playlist', {
 
     addTracks(filePaths) {
       const newTracks = filePaths.map(fp => extractTrackInfo(fp))
+      const startIndex = this.tracks.length
       this.tracks.push(...newTracks)
       console.log(`[PlaylistStore] Added ${newTracks.length} tracks, total: ${this.tracks.length}`)
+      this._enrichMetadata(startIndex, newTracks.length)
+    },
+
+    async _enrichMetadata(startIndex, count) {
+      for (let i = 0; i < count; i++) {
+        const trackIndex = startIndex + i
+        if (trackIndex >= this.tracks.length) break
+        const track = this.tracks[trackIndex]
+        const expectedPath = track.path
+        try {
+          const meta = await invoke('get_audio_metadata', { path: expectedPath })
+          // Post-await: verify track identity hasn't changed (playlist may have been modified)
+          if (trackIndex >= this.tracks.length || this.tracks[trackIndex]?.path !== expectedPath) continue
+          track.title = meta.title || track.title
+          track.artist = meta.artist || 'Inconnu'
+          track.duration = meta.duration || 0
+          track.bitrate = meta.bitrate ?? null
+          track.sampleRate = meta.sampleRate ?? null
+          track.channels = meta.channels ?? null
+        } catch (err) {
+          console.warn(`[PlaylistStore] Metadata extraction failed for ${expectedPath}:`, err)
+        }
+      }
     },
 
     removeTrack(index) {
@@ -91,13 +122,19 @@ export const usePlaylistStore = defineStore('playlist', {
 
     playPrevious() {
       if (this.tracks.length === 0) return
+      if (this.currentIndex < 0) return
+
+      if (this.repeatMode === 'one') {
+        this.playTrack(this.currentIndex)
+        return
+      }
 
       let prevIndex = this.currentIndex - 1
       if (prevIndex < 0) {
         if (this.repeatMode === 'all') {
           prevIndex = this.tracks.length - 1
         } else {
-          prevIndex = 0
+          return // ne rien faire en mode 'none' au début de la playlist
         }
       }
       this.playTrack(prevIndex)

@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { usePlayerStore } from '@/stores/usePlayerStore'
+import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useSkinStore } from '@/stores/useSkinStore'
 import { setupCanvas, drawBitmapText, drawScrollingText, measureText } from '@/engine/skinRenderer'
 
 const canvasRef = ref(null)
 const playerStore = usePlayerStore()
+const playlistStore = usePlaylistStore()
 const skinStore = useSkinStore()
 
 const CANVAS_WIDTH = 800
@@ -23,9 +25,10 @@ const INFO_FONT_SIZE = 11
 const TIME_ZONE = { x: 16, y: 36, w: 140, h: 36 }
 
 const scrollingTitle = computed(() => {
-  if (!playerStore.currentTrack) return 'winamp-sik'
-  const artist = playerStore.currentTrack.artist !== 'Unknown' ? playerStore.currentTrack.artist : ''
-  const title = playerStore.currentTrack.title || ''
+  const track = currentTrack.value
+  if (!track) return 'winamp-sik'
+  const artist = track.artist && track.artist !== 'Inconnu' ? track.artist : ''
+  const title = track.title || ''
   return artist ? `${artist} \u2014 ${title}` : title
 })
 
@@ -37,9 +40,22 @@ const timeDisplay = computed(() => {
   return formatTimeDisplay(playerStore.currentTime)
 })
 
-const bitrateInfo = computed(() => '128 kbps')
-const frequencyInfo = computed(() => '44.1 kHz')
-const stereoMode = computed(() => 'stereo')
+const currentTrack = computed(() => playlistStore.currentTrack)
+
+const bitrateInfo = computed(() => {
+  if (!currentTrack.value?.bitrate) return ''
+  return `${currentTrack.value.bitrate} kbps`
+})
+
+const frequencyInfo = computed(() => {
+  if (!currentTrack.value?.sampleRate) return ''
+  return `${(currentTrack.value.sampleRate / 1000).toFixed(1)} kHz`
+})
+
+const stereoMode = computed(() => {
+  if (!currentTrack.value?.channels) return ''
+  return currentTrack.value.channels >= 2 ? 'stereo' : 'mono'
+})
 
 function formatTimeDisplay(seconds) {
   if (!seconds || isNaN(seconds)) return '0:00'

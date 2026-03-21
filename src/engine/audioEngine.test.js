@@ -108,7 +108,7 @@ describe('AudioEngine', () => {
       expect(audioEngine.currentTrackInfo).toEqual({
         path: '/music/My Song.mp3',
         title: 'My Song',
-        artist: 'Unknown',
+        artist: 'Inconnu',
         duration: 0
       })
     })

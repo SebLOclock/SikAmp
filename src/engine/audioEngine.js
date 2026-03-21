@@ -31,7 +31,7 @@ async function ensureAudioContext() {
 function extractTrackInfo(filePath) {
   const fileName = filePath.split('/').pop().split('\\').pop()
   const name = fileName.replace(/\.[^.]+$/, '')
-  return { path: filePath, title: name, artist: 'Unknown', duration: 0 }
+  return { path: filePath, title: name, artist: 'Inconnu', duration: 0 }
 }
 
 // Event callbacks

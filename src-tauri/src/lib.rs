@@ -6,7 +6,11 @@ mod skin_parser;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![commands::file_commands::list_audio_files])
+        .plugin(tauri_plugin_store::Builder::default().build())
+        .invoke_handler(tauri::generate_handler![
+            commands::file_commands::list_audio_files,
+            commands::audio_commands::get_audio_metadata
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
