@@ -46,9 +46,9 @@ development_status:
   epic-1: in-progress
   1-1-initialisation-du-projet-tauri-vue-js: done
   1-2-moteur-audio-et-lecture-de-base: done
-  1-3-interface-skinnee-classic-faithful: review
-  1-4-controles-de-lecture-complets: review
-  1-5-drag-drop-et-playlist-basique: backlog
+  1-3-interface-skinnee-classic-faithful: done
+  1-4-controles-de-lecture-complets: done
+  1-5-drag-drop-et-playlist-basique: review
   1-6-jingle-au-lancement: backlog
   1-7-gestion-gracieuse-des-erreurs: backlog
   1-8-accessibilite-clavier-et-lecteurs-d-ecran: backlog

@@ -78,12 +78,14 @@ describe('useKeyboardShortcuts', () => {
 
   describe('play/pause toggle (Space)', () => {
     it('pauses when playing', async () => {
+      playlistStore.addTracks(['/test.mp3'])
       await playerStore.play('/test.mp3')
       fireKey(' ')
       expect(playerStore.isPaused).toBe(true)
     })
 
     it('resumes when paused', async () => {
+      playlistStore.addTracks(['/test.mp3'])
       await playerStore.play('/test.mp3')
       playerStore.pause()
       fireKey(' ')
@@ -101,6 +103,7 @@ describe('useKeyboardShortcuts', () => {
 
   describe('stop (S)', () => {
     it('stops playback', async () => {
+      playlistStore.addTracks(['/test.mp3'])
       await playerStore.play('/test.mp3')
       fireKey('s')
       expect(playerStore.isPlaying).toBe(false)
@@ -126,6 +129,7 @@ describe('useKeyboardShortcuts', () => {
 
   describe('seek (Arrow Left/Right)', () => {
     it('seeks forward 5 seconds on ArrowRight', async () => {
+      playlistStore.addTracks(['/test.mp3'])
       await playerStore.play('/test.mp3')
       playerStore.duration = 100
       playerStore.currentTime = 10
@@ -134,6 +138,7 @@ describe('useKeyboardShortcuts', () => {
     })
 
     it('seeks backward 5 seconds on ArrowLeft', async () => {
+      playlistStore.addTracks(['/test.mp3'])
       await playerStore.play('/test.mp3')
       playerStore.duration = 100
       playerStore.currentTime = 10
@@ -180,6 +185,7 @@ describe('useKeyboardShortcuts', () => {
 
   describe('input focus guard', () => {
     it('does nothing when input is focused', async () => {
+      playlistStore.addTracks(['/test.mp3'])
       await playerStore.play('/test.mp3')
       // Simulate input focus
       const input = document.createElement('input')
@@ -191,6 +197,42 @@ describe('useKeyboardShortcuts', () => {
       expect(playerStore.isPlaying).toBe(true)
 
       document.body.removeChild(input)
+    })
+  })
+
+  describe('disabled when playlist is empty', () => {
+    it('does not toggle play/pause on Space when playlist is empty', () => {
+      // playlist is empty by default
+      expect(playlistStore.isEmpty).toBe(true)
+      fireKey(' ')
+      expect(playerStore.isPlaying).toBe(false)
+    })
+
+    it('does not stop on S when playlist is empty', () => {
+      expect(playlistStore.isEmpty).toBe(true)
+      fireKey('s')
+      // No error, just no action
+    })
+
+    it('does not navigate on N/P when playlist is empty', () => {
+      expect(playlistStore.isEmpty).toBe(true)
+      fireKey('n')
+      fireKey('p')
+      expect(playlistStore.currentIndex).toBe(-1)
+    })
+
+    it('still allows volume changes when playlist is empty', () => {
+      expect(playlistStore.isEmpty).toBe(true)
+      const initialVolume = playerStore.volume
+      fireKey('ArrowUp')
+      expect(playerStore.volume).toBeGreaterThan(initialVolume)
+    })
+
+    it('still allows mute toggle when playlist is empty', () => {
+      expect(playlistStore.isEmpty).toBe(true)
+      playerStore.volume = 0.8
+      fireKey('m')
+      expect(playerStore.volume).toBe(0)
     })
   })
 })

@@ -4,6 +4,7 @@ import { useSkinStore } from '@/stores/useSkinStore'
 import { usePlayerStore } from '@/stores/usePlayerStore'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { useFileDrop } from '@/composables/useFileDrop'
 import PlayerDisplay from '@/components/player/PlayerDisplay.vue'
 import SeekBar from '@/components/player/SeekBar.vue'
 import TransportControls from '@/components/player/TransportControls.vue'
@@ -15,6 +16,52 @@ const skinStore = useSkinStore()
 const playerStore = usePlayerStore()
 const playlistStore = usePlaylistStore()
 useKeyboardShortcuts()
+
+const { isDragging } = useFileDrop(handleFilesDropped)
+
+const BATCH_SIZE = 50
+let isProcessingDrop = false
+
+async function addTracksInBatches(paths, autoPlay) {
+  if (paths.length <= BATCH_SIZE) {
+    playlistStore.addTracks(paths)
+    if (autoPlay) playlistStore.playTrack(0)
+    return
+  }
+  for (let i = 0; i < paths.length; i += BATCH_SIZE) {
+    const batch = paths.slice(i, i + BATCH_SIZE)
+    playlistStore.addTracks(batch)
+    if (i === 0 && autoPlay) {
+      playlistStore.playTrack(0)
+    }
+    if (i + BATCH_SIZE < paths.length) {
+      await new Promise(resolve => requestAnimationFrame(resolve))
+    }
+  }
+}
+
+async function handleFilesDropped(paths) {
+  if (isProcessingDrop) return
+  isProcessingDrop = true
+  try {
+    const { processDroppedPaths } = await import('@/utils/fileDropProcessor.js')
+    const wasEmpty = playlistStore.isEmpty
+    const { directFiles, resolvedFiles } = await processDroppedPaths(paths)
+
+    // Add direct audio files first for instant feedback
+    if (directFiles.length > 0) {
+      await addTracksInBatches(directFiles, wasEmpty)
+    }
+
+    // Then add files resolved from directories
+    if (resolvedFiles.length > 0) {
+      const autoPlay = wasEmpty && directFiles.length === 0
+      await addTracksInBatches(resolvedFiles, autoPlay)
+    }
+  } finally {
+    isProcessingDrop = false
+  }
+}
 
 function handlePrev() {
   playlistStore.playPrevious()
@@ -42,7 +89,7 @@ onMounted(() => {
       </div>
       <ActionBar />
     </div>
-    <PlaylistPanel />
+    <PlaylistPanel :is-dragging="isDragging" />
   </main>
 </template>
 

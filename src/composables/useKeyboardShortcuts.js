@@ -20,9 +20,13 @@ export function useKeyboardShortcuts() {
 
     const key = event.key.toLowerCase()
 
+    // Playback shortcuts are disabled when playlist is empty
+    const playbackDisabled = playlistStore.isEmpty
+
     switch (key) {
       case ' ':
         event.preventDefault()
+        if (playbackDisabled) break
         if (playerStore.isPlaying) {
           playerStore.pause()
         } else if (playerStore.isPaused) {
@@ -33,19 +37,23 @@ export function useKeyboardShortcuts() {
         break
 
       case 's':
+        if (playbackDisabled) break
         playerStore.stop()
         break
 
       case 'n':
+        if (playbackDisabled) break
         playlistStore.playNext()
         break
 
       case 'p':
+        if (playbackDisabled) break
         playlistStore.playPrevious()
         break
 
       case 'arrowright':
         event.preventDefault()
+        if (playbackDisabled) break
         if (playerStore.duration > 0) {
           playerStore.seek(Math.min(playerStore.currentTime + SEEK_STEP, playerStore.duration))
         }
@@ -53,6 +61,7 @@ export function useKeyboardShortcuts() {
 
       case 'arrowleft':
         event.preventDefault()
+        if (playbackDisabled) break
         if (playerStore.duration > 0) {
           playerStore.seek(Math.max(playerStore.currentTime - SEEK_STEP, 0))
         }
