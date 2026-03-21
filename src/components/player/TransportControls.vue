@@ -1,11 +1,13 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { usePlayerStore } from '@/stores/usePlayerStore'
+import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useSkinStore } from '@/stores/useSkinStore'
 import { setupCanvas, drawBackground, drawButton } from '@/engine/skinRenderer'
 
 const canvasRef = ref(null)
 const playerStore = usePlayerStore()
+const playlistStore = usePlaylistStore()
 const skinStore = useSkinStore()
 
 const CANVAS_WIDTH = 580
@@ -32,6 +34,10 @@ const isDisabled = computed(() => {
   return playerStore.isStopped && !playerStore.currentTrack
 })
 
+const isPrevDisabled = computed(() => {
+  return isDisabled.value || !playlistStore.canPlayPrevious
+})
+
 function draw() {
   const canvas = canvasRef.value
   if (!canvas) return
@@ -41,7 +47,8 @@ function draw() {
 
   for (const btn of BUTTONS) {
     let state = 'normal'
-    if (isDisabled.value) state = 'disabled'
+    const btnDisabled = btn.id === 'prev' ? isPrevDisabled.value : isDisabled.value
+    if (btnDisabled) state = 'disabled'
     else if (pressedButton.value === btn.id) state = 'pressed'
     else if (hoveredButton.value === btn.id) state = 'hover'
     drawButton(ctx, btn.x, BTN_Y, BTN_W, BTN_H, state, btn.label)
@@ -80,7 +87,8 @@ function handleMouseDown(event) {
 function handleMouseUp(event) {
   const { x, y } = getMousePos(event)
   const btn = findButton(x, y)
-  if (btn && btn === pressedButton.value && !isDisabled.value) {
+  const btnDisabled = btn === 'prev' ? isPrevDisabled.value : isDisabled.value
+  if (btn && btn === pressedButton.value && !btnDisabled) {
     executeAction(btn)
   }
   pressedButton.value = null
@@ -117,13 +125,14 @@ function executeAction(btnId) {
 }
 
 function accessibleAction(btnId) {
-  if (!isDisabled.value) executeAction(btnId)
+  const btnDisabled = btnId === 'prev' ? isPrevDisabled.value : isDisabled.value
+  if (!btnDisabled) executeAction(btnId)
 }
 
 onMounted(() => draw())
 
 watch(
-  () => [playerStore.isPlaying, playerStore.isPaused, playerStore.currentTrack, skinStore.renderMode],
+  () => [playerStore.isPlaying, playerStore.isPaused, playerStore.currentTrack, skinStore.renderMode, playlistStore.canPlayPrevious],
   () => draw()
 )
 </script>
@@ -139,7 +148,7 @@ watch(
       @mouseleave="handleMouseLeave"
     />
     <!-- Accessible hidden buttons -->
-    <button class="sr-only-btn" aria-label="Précédent" :disabled="isDisabled" @click="accessibleAction('prev')" />
+    <button class="sr-only-btn" aria-label="Précédent" :disabled="isPrevDisabled" @click="accessibleAction('prev')" />
     <button class="sr-only-btn" aria-label="Lecture" :disabled="isDisabled" @click="accessibleAction('play')" />
     <button class="sr-only-btn" aria-label="Pause" :disabled="isDisabled" @click="accessibleAction('pause')" />
     <button class="sr-only-btn" aria-label="Stop" :disabled="isDisabled" @click="accessibleAction('stop')" />

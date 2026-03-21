@@ -2,6 +2,11 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { usePlaylistStore } from './usePlaylistStore'
 
+// Mock Tauri invoke
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: vi.fn().mockRejectedValue(new Error('not in Tauri'))
+}))
+
 // Mock audioEngine
 vi.mock('@/engine/audioEngine', () => ({
   default: {
@@ -72,8 +77,11 @@ describe('usePlaylistStore', () => {
       expect(store.currentTrack).toEqual({
         path: '/music/song.mp3',
         title: 'song',
-        artist: 'Unknown',
-        duration: 0
+        artist: 'Inconnu',
+        duration: 0,
+        bitrate: null,
+        sampleRate: null,
+        channels: null
       })
     })
 
@@ -90,6 +98,45 @@ describe('usePlaylistStore', () => {
     it('isEmpty returns false when tracks exist', () => {
       store.addTracks(['/a.mp3'])
       expect(store.isEmpty).toBe(false)
+    })
+
+    describe('canPlayPrevious', () => {
+      it('returns false for empty playlist', () => {
+        expect(store.canPlayPrevious).toBe(false)
+      })
+
+      it('returns false when currentIndex is -1', () => {
+        store.addTracks(['/a.mp3'])
+        expect(store.canPlayPrevious).toBe(false)
+      })
+
+      it('returns false at index 0 in repeat none', () => {
+        store.addTracks(['/a.mp3', '/b.mp3'])
+        store.currentIndex = 0
+        store.repeatMode = 'none'
+        expect(store.canPlayPrevious).toBe(false)
+      })
+
+      it('returns true at index 0 in repeat all', () => {
+        store.addTracks(['/a.mp3', '/b.mp3'])
+        store.currentIndex = 0
+        store.repeatMode = 'all'
+        expect(store.canPlayPrevious).toBe(true)
+      })
+
+      it('returns true at index 0 in repeat one', () => {
+        store.addTracks(['/a.mp3', '/b.mp3'])
+        store.currentIndex = 0
+        store.repeatMode = 'one'
+        expect(store.canPlayPrevious).toBe(true)
+      })
+
+      it('returns true at index > 0 in repeat none', () => {
+        store.addTracks(['/a.mp3', '/b.mp3'])
+        store.currentIndex = 1
+        store.repeatMode = 'none'
+        expect(store.canPlayPrevious).toBe(true)
+      })
     })
   })
 
@@ -222,10 +269,29 @@ describe('usePlaylistStore', () => {
       expect(store.currentIndex).toBe(2)
     })
 
-    it('stays at first track without repeat', () => {
+    it('does nothing at first track without repeat', () => {
       store.currentIndex = 0
       store.playPrevious()
-      expect(store.currentIndex).toBe(0)
+      expect(store.currentIndex).toBe(0) // stays, playTrack(0) not called again
+    })
+
+    it('does nothing when currentIndex is -1', () => {
+      store.currentIndex = -1
+      store.playPrevious()
+      expect(store.currentIndex).toBe(-1)
+    })
+
+    it('does nothing on empty playlist', () => {
+      store.clearPlaylist()
+      store.playPrevious()
+      expect(store.currentIndex).toBe(-1)
+    })
+
+    it('repeats same track with repeat one', () => {
+      store.currentIndex = 1
+      store.repeatMode = 'one'
+      store.playPrevious()
+      expect(store.currentIndex).toBe(1)
     })
   })
 

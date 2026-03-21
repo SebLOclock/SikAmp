@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import audioEngine from '@/engine/audioEngine.js'
 import { DEFAULT_VOLUME } from '@/utils/constants.js'
+import { usePreferencesStore } from './usePreferencesStore'
 
 let eventsSubscribed = false
 
@@ -69,6 +70,17 @@ export const usePlayerStore = defineStore('player', {
       const clamped = Math.max(0, Math.min(1, level))
       this.volume = clamped
       audioEngine.setVolume(clamped)
+      const preferencesStore = usePreferencesStore()
+      preferencesStore.saveVolume(clamped)
+    },
+
+    async restoreVolume() {
+      const preferencesStore = usePreferencesStore()
+      await preferencesStore.loadPreferences()
+      this.volume = preferencesStore.volume
+      // Volume will be applied to audioEngine when _subscribeToEvents runs (first play)
+      // If gainNode already exists, apply immediately
+      audioEngine.setVolume(this.volume)
     },
 
     seek(time) {

@@ -1,6 +1,6 @@
 # Story 1.2 : Moteur Audio et Lecture de Base
 
-Status: review
+Status: done
 
 ## Story
 

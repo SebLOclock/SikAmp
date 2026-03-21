@@ -1,7 +1,9 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useSkinStore } from '@/stores/useSkinStore'
+import { usePlayerStore } from '@/stores/usePlayerStore'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import PlayerDisplay from '@/components/player/PlayerDisplay.vue'
 import SeekBar from '@/components/player/SeekBar.vue'
 import TransportControls from '@/components/player/TransportControls.vue'
@@ -10,7 +12,9 @@ import ActionBar from '@/components/player/ActionBar.vue'
 import PlaylistPanel from '@/components/playlist/PlaylistPanel.vue'
 
 const skinStore = useSkinStore()
+const playerStore = usePlayerStore()
 const playlistStore = usePlaylistStore()
+useKeyboardShortcuts()
 
 function handlePrev() {
   playlistStore.playPrevious()
@@ -23,6 +27,7 @@ function handleNext() {
 onMounted(() => {
   skinStore.loadDefaultSkin()
   playlistStore.init()
+  playerStore.restoreVolume()
 })
 </script>
 
