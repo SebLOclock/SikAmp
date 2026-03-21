@@ -1,0 +1,28 @@
+# Winamp-sik Classic Faithful Color Palette
+# Format: R,G,B (0-255) - one color per line
+# Based on classic Winamp aesthetic
+#
+# Index 0: Background
+41,41,46
+# Index 1: Display background
+0,0,0
+# Index 2: Primary text (green)
+0,255,0
+# Index 3: Secondary text
+0,204,0
+# Index 4: Playlist text
+0,255,0
+# Index 5: Active track text
+255,255,255
+# Index 6: Playlist background
+0,0,0
+# Index 7: Accent metallic
+90,90,95
+# Index 8: Disabled controls
+85,85,85
+# Index 9: Error
+255,68,68
+# Index 10: Success
+68,255,68
+# Index 11: Info
+68,136,255
