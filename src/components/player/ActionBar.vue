@@ -103,11 +103,15 @@ function handleMouseLeave() {
   draw()
 }
 
+const emit = defineEmits(['prefs'])
+
 function executeAction(btnId) {
   const btn = BUTTONS.find(b => b.id === btnId)
   if (btn && btn.toggle) {
     toggleState.value[btnId] = !toggleState.value[btnId]
     console.log(`[ActionBar] ${btnId} toggled:`, toggleState.value[btnId])
+  } else if (btnId === 'prefs') {
+    emit('prefs')
   } else {
     console.log(`[ActionBar] ${btnId} clicked (stub)`)
   }

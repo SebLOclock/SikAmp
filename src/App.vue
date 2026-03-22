@@ -1,20 +1,26 @@
 <script setup>
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useSkinStore } from '@/stores/useSkinStore'
 import { usePlayerStore } from '@/stores/usePlayerStore'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
+import { usePreferencesStore } from '@/stores/usePreferencesStore'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 import { useFileDrop } from '@/composables/useFileDrop'
+import { useJingle } from '@/composables/useJingle'
 import PlayerDisplay from '@/components/player/PlayerDisplay.vue'
 import SeekBar from '@/components/player/SeekBar.vue'
 import TransportControls from '@/components/player/TransportControls.vue'
 import VolumeSlider from '@/components/player/VolumeSlider.vue'
 import ActionBar from '@/components/player/ActionBar.vue'
 import PlaylistPanel from '@/components/playlist/PlaylistPanel.vue'
+import PreferencesPanel from '@/components/shared/PreferencesPanel.vue'
 
+const showPreferences = ref(false)
 const skinStore = useSkinStore()
 const playerStore = usePlayerStore()
 const playlistStore = usePlaylistStore()
+const preferencesStore = usePreferencesStore()
+const { playJingle } = useJingle()
 useKeyboardShortcuts()
 
 const { isDragging } = useFileDrop(handleFilesDropped)
@@ -72,9 +78,11 @@ function handleNext() {
 }
 
 onMounted(() => {
+  // Start UI init immediately (no blocking), load prefs + jingle in parallel
   skinStore.loadDefaultSkin()
   playlistStore.init()
   playerStore.restoreVolume()
+  preferencesStore.loadPreferences().then(() => playJingle())
 })
 </script>
 
@@ -87,9 +95,10 @@ onMounted(() => {
         <TransportControls @prev="handlePrev" @next="handleNext" />
         <VolumeSlider />
       </div>
-      <ActionBar />
+      <ActionBar @prefs="showPreferences = !showPreferences" />
     </div>
     <PlaylistPanel :is-dragging="isDragging" />
+    <PreferencesPanel :visible="showPreferences" @close="showPreferences = false" />
   </main>
 </template>
 

@@ -1,5 +1,5 @@
 # generated: 2026-03-21
-# last_updated: 2026-03-21
+# last_updated: 2026-03-22
 # project: winamp-sik
 # project_key: NOKEY
 # tracking_system: file-system
@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-21
-last_updated: 2026-03-21
+last_updated: 2026-03-22
 project: winamp-sik
 project_key: NOKEY
 tracking_system: file-system
@@ -48,8 +48,8 @@ development_status:
   1-2-moteur-audio-et-lecture-de-base: done
   1-3-interface-skinnee-classic-faithful: done
   1-4-controles-de-lecture-complets: done
-  1-5-drag-drop-et-playlist-basique: review
-  1-6-jingle-au-lancement: backlog
+  1-5-drag-drop-et-playlist-basique: done
+  1-6-jingle-au-lancement: review
   1-7-gestion-gracieuse-des-erreurs: backlog
   1-8-accessibilite-clavier-et-lecteurs-d-ecran: backlog
   1-9-double-mode-de-rendu-et-redimensionnement: backlog

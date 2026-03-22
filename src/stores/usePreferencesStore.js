@@ -6,7 +6,7 @@ const STORE_FILE = 'preferences.json'
 const DEBOUNCE_MS = 500
 
 let storePromise = null
-let debounceTimer = null
+const debounceTimers = {}
 
 function getStore() {
   if (!storePromise) {
@@ -17,7 +17,8 @@ function getStore() {
 
 export const usePreferencesStore = defineStore('preferences', {
   state: () => ({
-    volume: DEFAULT_VOLUME
+    volume: DEFAULT_VOLUME,
+    jingleEnabled: true
   }),
 
   actions: {
@@ -28,7 +29,11 @@ export const usePreferencesStore = defineStore('preferences', {
         if (savedVolume !== null && savedVolume !== undefined) {
           this.volume = savedVolume
         }
-        console.log('[PreferencesStore] Loaded volume:', this.volume)
+        const savedJingle = await s.get('jingleEnabled')
+        if (savedJingle !== null && savedJingle !== undefined) {
+          this.jingleEnabled = savedJingle
+        }
+        console.log('[PreferencesStore] Loaded preferences — volume:', this.volume, 'jingle:', this.jingleEnabled)
       } catch (err) {
         console.warn('[PreferencesStore] Failed to load preferences:', err)
       }
@@ -36,14 +41,24 @@ export const usePreferencesStore = defineStore('preferences', {
 
     saveVolume(level) {
       this.volume = level
-      if (debounceTimer) clearTimeout(debounceTimer)
-      debounceTimer = setTimeout(async () => {
+      this._debouncedSave('volume', level)
+    },
+
+    toggleJingle() {
+      this.jingleEnabled = !this.jingleEnabled
+      console.log('[PreferencesStore] Jingle toggled:', this.jingleEnabled)
+      this._debouncedSave('jingleEnabled', this.jingleEnabled)
+    },
+
+    _debouncedSave(key, value) {
+      if (debounceTimers[key]) clearTimeout(debounceTimers[key])
+      debounceTimers[key] = setTimeout(async () => {
         try {
           const s = await getStore()
-          await s.set('volume', level)
+          await s.set(key, value)
           await s.save()
         } catch (err) {
-          console.warn('[PreferencesStore] Failed to save volume:', err)
+          console.warn('[PreferencesStore] Failed to save preference:', err)
         }
       }, DEBOUNCE_MS)
     }
