@@ -32,6 +32,29 @@ const scrollingTitle = computed(() => {
   return artist ? `${artist} \u2014 ${title}` : title
 })
 
+const hadFeedback = ref(false)
+
+const displayTitle = computed(() => {
+  // Feedback message replaces the scrolling title when active
+  if (playerStore.feedbackMessage) {
+    hadFeedback.value = true
+    return playerStore.feedbackMessage.text
+  }
+  // Reset scroll offset when feedback clears to avoid visual jump
+  if (hadFeedback.value) {
+    scrollOffset = 0
+    hadFeedback.value = false
+  }
+  return scrollingTitle.value
+})
+
+const displayTitleColor = computed(() => {
+  if (playerStore.feedbackMessage) {
+    return playerStore.feedbackMessage.color
+  }
+  return skinStore.colors.textPrimary
+})
+
 const timeDisplay = computed(() => {
   if (showRemaining.value && playerStore.duration > 0) {
     const remaining = playerStore.duration - playerStore.currentTime
@@ -55,6 +78,14 @@ const frequencyInfo = computed(() => {
 const stereoMode = computed(() => {
   if (!currentTrack.value?.channels) return ''
   return currentTrack.value.channels >= 2 ? 'stereo' : 'mono'
+})
+
+// Accessible announcement for screen readers
+const ariaAnnouncement = computed(() => {
+  if (playerStore.feedbackMessage) {
+    return playerStore.feedbackMessage.text
+  }
+  return `${scrollingTitle.value} — ${timeDisplay.value}`
 })
 
 function formatTimeDisplay(seconds) {
@@ -81,16 +112,28 @@ function draw() {
   ctx.fillRect(0, CANVAS_HEIGHT - 1, CANVAS_WIDTH, 1)
   ctx.fillRect(CANVAS_WIDTH - 1, 0, 1, CANVAS_HEIGHT)
 
-  // Scrolling title
-  drawScrollingText(
-    ctx,
-    scrollingTitle.value,
-    12, 10,
-    CANVAS_WIDTH - 24,
-    scrollOffset,
-    TITLE_FONT_SIZE, null,
-    skinStore.colors.textPrimary
-  )
+  // Title zone: feedback message or scrolling title
+  if (playerStore.feedbackMessage) {
+    // Static feedback message in semantic color (no scroll)
+    drawBitmapText(
+      ctx,
+      displayTitle.value,
+      12, 10,
+      TITLE_FONT_SIZE, null,
+      displayTitleColor.value
+    )
+  } else {
+    // Normal scrolling title
+    drawScrollingText(
+      ctx,
+      scrollingTitle.value,
+      12, 10,
+      CANVAS_WIDTH - 24,
+      scrollOffset,
+      TITLE_FONT_SIZE, null,
+      skinStore.colors.textPrimary
+    )
+  }
 
   // Time display (large)
   drawBitmapText(ctx, timeDisplay.value, 20, 40, TIME_FONT_SIZE, null, skinStore.colors.textPrimary)
@@ -103,7 +146,7 @@ function draw() {
 }
 
 function animateScroll() {
-  if (playerStore.isPlaying) {
+  if (playerStore.isPlaying && !playerStore.feedbackMessage) {
     scrollOffset += 0.8
     const canvas = canvasRef.value
     if (canvas) {
@@ -146,9 +189,9 @@ onUnmounted(() => {
       class="display-canvas"
       @click="handleCanvasClick"
     />
-    <!-- Accessible live region for screen readers -->
+    <!-- Accessible live region for screen readers (feedback + title) -->
     <div class="sr-only" aria-live="polite" role="status">
-      {{ scrollingTitle }} — {{ timeDisplay }}
+      {{ ariaAnnouncement }}
     </div>
   </div>
 </template>

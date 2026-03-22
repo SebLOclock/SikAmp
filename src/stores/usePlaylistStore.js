@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
 import { usePlayerStore } from './usePlayerStore'
 import audioEngine from '@/engine/audioEngine'
+import { isSupportedFormat, extractFileName } from '@/utils/formatValidator.js'
 
 let endedListenerAttached = false
 
@@ -16,7 +17,8 @@ export const usePlaylistStore = defineStore('playlist', {
     tracks: [],
     currentIndex: -1,
     isShuffled: false,
-    repeatMode: 'none' // 'none' | 'all' | 'one'
+    repeatMode: 'none', // 'none' | 'all' | 'one'
+    _consecutiveErrors: 0
   }),
 
   getters: {
@@ -47,6 +49,10 @@ export const usePlaylistStore = defineStore('playlist', {
       const newTracks = filePaths.map(fp => extractTrackInfo(fp))
       const startIndex = this.tracks.length
       this.tracks.push(...newTracks)
+      // Clear any persistent error feedback since new tracks are available
+      const playerStore = usePlayerStore()
+      playerStore.clearFeedback()
+      this._consecutiveErrors = 0
       console.log(`[PlaylistStore] Added ${newTracks.length} tracks, total: ${this.tracks.length}`)
       this._enrichMetadata(startIndex, newTracks.length)
     },
@@ -87,17 +93,49 @@ export const usePlaylistStore = defineStore('playlist', {
     clearPlaylist() {
       this.tracks = []
       this.currentIndex = -1
+      this._consecutiveErrors = 0
       console.log('[PlaylistStore] Playlist cleared')
     },
 
-    playTrack(index) {
+    async playTrack(index) {
       if (index < 0 || index >= this.tracks.length) return
       this.currentIndex = index
       const track = this.tracks[index]
       const playerStore = usePlayerStore()
-      playerStore.play(track.path)
+
+      // PRE-CHECK: validate format before attempting playback
+      if (!isSupportedFormat(track.path)) {
+        const fileName = extractFileName(track.path)
+        console.warn(`[PlaylistStore] Unsupported format: ${fileName}`)
+        playerStore.showFeedback(`Format non supporté : ${fileName}`, 'error')
+        this._handlePlaybackError()
+        return
+      }
+
+      await playerStore.play(track.path)
+      // _consecutiveErrors is reset in onLoadedMetadata (reliable success signal)
+      // Async errors (corrupt/missing) handled by audioEngine.onError → _handlePlaybackError
       this._subscribeToEnded()
       console.log('[PlaylistStore] Playing track:', track.title)
+    },
+
+    _handlePlaybackError() {
+      this._consecutiveErrors++
+
+      // Anti-infinite-loop: if we've tried all tracks, stop
+      if (this._consecutiveErrors >= this.tracks.length) {
+        console.warn(`[PlaylistStore] All ${this.tracks.length} tracks failed, stopping`)
+        const playerStore = usePlayerStore()
+        playerStore.isPlaying = false
+        playerStore.isPaused = false
+        // Keep the last error message visible (persistent)
+        if (playerStore.feedbackMessage) {
+          playerStore.showFeedback(playerStore.feedbackMessage.text, 'error', true)
+        }
+        return
+      }
+
+      this.playNext()
     },
 
     playNext() {
@@ -160,6 +198,7 @@ export const usePlaylistStore = defineStore('playlist', {
         const el = audioEngine._audioElement
         if (el) {
           el.addEventListener('ended', () => {
+            this._consecutiveErrors = 0 // Successful playback completed
             this.playNext()
           })
           endedListenerAttached = true
