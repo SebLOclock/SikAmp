@@ -1,6 +1,6 @@
 # Story 1.6 : Jingle au Lancement
 
-Status: review
+Status: done
 
 ## Story
 

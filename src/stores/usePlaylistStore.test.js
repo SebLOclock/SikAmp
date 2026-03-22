@@ -36,7 +36,10 @@ vi.mock('./usePlayerStore', () => ({
     stop: vi.fn(),
     isPlaying: false,
     isPaused: false,
-    currentTrack: null
+    currentTrack: null,
+    feedbackMessage: null,
+    showFeedback: vi.fn(),
+    clearFeedback: vi.fn()
   })
 }))
 

@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia'
 import audioEngine from '@/engine/audioEngine.js'
-import { DEFAULT_VOLUME } from '@/utils/constants.js'
+import { DEFAULT_VOLUME, FEEDBACK_COLORS, FEEDBACK_DURATION } from '@/utils/constants.js'
 import { usePreferencesStore } from './usePreferencesStore'
+import { extractFileName } from '@/utils/formatValidator.js'
 
 let eventsSubscribed = false
+let feedbackTimer = null
 
 export const usePlayerStore = defineStore('player', {
   state: () => ({
@@ -12,7 +14,8 @@ export const usePlayerStore = defineStore('player', {
     currentTrack: null, // { path, title, artist, duration }
     currentTime: 0,
     duration: 0,
-    volume: DEFAULT_VOLUME
+    volume: DEFAULT_VOLUME,
+    feedbackMessage: null // { text, color } or null
   }),
 
   getters: {
@@ -39,6 +42,8 @@ export const usePlayerStore = defineStore('player', {
         console.error('[PlayerStore] Play failed:', err.message)
         this.isPlaying = false
         this.isPaused = false
+        // Don't throw — async errors are handled by onError callback
+        // which triggers _handlePlaybackError on the playlist store
       }
     },
 
@@ -83,6 +88,24 @@ export const usePlayerStore = defineStore('player', {
       audioEngine.setVolume(this.volume)
     },
 
+    showFeedback(text, type = 'error', persistent = false) {
+      const color = FEEDBACK_COLORS[type] || FEEDBACK_COLORS.error
+      this.feedbackMessage = { text, color }
+      if (feedbackTimer) clearTimeout(feedbackTimer)
+      if (!persistent) {
+        feedbackTimer = setTimeout(() => {
+          this.feedbackMessage = null
+          feedbackTimer = null
+        }, FEEDBACK_DURATION)
+      }
+    },
+
+    clearFeedback() {
+      if (feedbackTimer) clearTimeout(feedbackTimer)
+      feedbackTimer = null
+      this.feedbackMessage = null
+    },
+
     seek(time) {
       audioEngine.seek(time) // P6: use public API instead of _audioElement
       this.currentTime = audioEngine.currentTime
@@ -104,11 +127,32 @@ export const usePlayerStore = defineStore('player', {
       audioEngine.onLoadedMetadata = ({ duration, trackInfo }) => {
         this.duration = duration
         this.currentTrack = trackInfo
+        this.clearFeedback()
+        // Reset consecutive errors on confirmed successful load
+        import('./usePlaylistStore').then(({ usePlaylistStore }) => {
+          const playlistStore = usePlaylistStore()
+          playlistStore._consecutiveErrors = 0
+        }).catch(() => {})
       }
 
-      audioEngine.onError = () => {
+      audioEngine.onError = (error) => {
         this.isPlaying = false
         this.isPaused = false
+        // Get filename from audioEngine.currentTrackInfo (set synchronously in loadAndPlay)
+        const trackPath = audioEngine.currentTrackInfo?.path || ''
+        const fileName = extractFileName(trackPath)
+        if (error && error.code === 2) {
+          this.showFeedback(`Fichier introuvable : ${fileName}`, 'error')
+        } else if (error && (error.code === 3 || error.code === 4)) {
+          this.showFeedback(`Impossible de lire : ${fileName}`, 'error')
+        } else if (error && error.code !== 1) {
+          this.showFeedback(`Impossible de lire : ${fileName}`, 'error')
+        }
+        // Auto-skip: lazy import to avoid circular dependency
+        import('./usePlaylistStore').then(({ usePlaylistStore }) => {
+          const playlistStore = usePlaylistStore()
+          playlistStore._handlePlaybackError()
+        }).catch(err => console.error('[PlayerStore] Failed to load playlistStore for error handling:', err))
       }
 
       // Apply current volume
