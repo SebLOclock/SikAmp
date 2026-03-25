@@ -200,6 +200,34 @@ describe('useKeyboardShortcuts', () => {
     })
   })
 
+  describe('Ctrl+N new playlist', () => {
+    it('calls onNewPlaylist callback', async () => {
+      const onNewPlaylist = vi.fn()
+      const { registerShortcutCallbacks } = await import('./useKeyboardShortcuts.js')
+      registerShortcutCallbacks({ onNewPlaylist })
+
+      fireKey('n', { ctrlKey: true })
+      expect(onNewPlaylist).toHaveBeenCalled()
+    })
+
+    it('prevents default browser behavior', async () => {
+      const { registerShortcutCallbacks } = await import('./useKeyboardShortcuts.js')
+      registerShortcutCallbacks({ onNewPlaylist: vi.fn() })
+
+      const event = fireKey('n', { ctrlKey: true })
+      expect(event.preventDefault).toHaveBeenCalled()
+    })
+
+    it('works with metaKey (macOS)', async () => {
+      const onNewPlaylist = vi.fn()
+      const { registerShortcutCallbacks } = await import('./useKeyboardShortcuts.js')
+      registerShortcutCallbacks({ onNewPlaylist })
+
+      fireKey('n', { metaKey: true })
+      expect(onNewPlaylist).toHaveBeenCalled()
+    })
+  })
+
   describe('disabled when playlist is empty', () => {
     it('does not toggle play/pause on Space when playlist is empty', () => {
       // playlist is empty by default

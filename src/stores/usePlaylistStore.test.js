@@ -27,20 +27,22 @@ vi.mock('@/engine/audioEngine', () => ({
   }
 }))
 
-// Mock usePlayerStore
+// Mock usePlayerStore — shared instance so spy assertions work
+const mockPlayerStore = {
+  play: vi.fn(),
+  pause: vi.fn(),
+  resume: vi.fn(),
+  stop: vi.fn(),
+  isPlaying: false,
+  isPaused: false,
+  currentTrack: null,
+  feedbackMessage: null,
+  showFeedback: vi.fn(),
+  clearFeedback: vi.fn(),
+  _handleManualCrossfadeNext: vi.fn().mockResolvedValue(false)
+}
 vi.mock('./usePlayerStore', () => ({
-  usePlayerStore: () => ({
-    play: vi.fn(),
-    pause: vi.fn(),
-    resume: vi.fn(),
-    stop: vi.fn(),
-    isPlaying: false,
-    isPaused: false,
-    currentTrack: null,
-    feedbackMessage: null,
-    showFeedback: vi.fn(),
-    clearFeedback: vi.fn()
-  })
+  usePlayerStore: () => mockPlayerStore
 }))
 
 describe('usePlaylistStore', () => {
@@ -49,6 +51,13 @@ describe('usePlaylistStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia())
     store = usePlaylistStore()
+    // Reset shared mock state
+    mockPlayerStore.isPlaying = false
+    mockPlayerStore.isPaused = false
+    mockPlayerStore.play.mockClear()
+    mockPlayerStore.stop.mockClear()
+    mockPlayerStore.clearFeedback.mockClear()
+    mockPlayerStore._handleManualCrossfadeNext.mockClear()
   })
 
   describe('initial state', () => {
@@ -157,6 +166,19 @@ describe('usePlaylistStore', () => {
       store.addTracks(['/b.mp3'])
       expect(store.tracks).toHaveLength(2)
     })
+
+    it('does not interrupt playback when adding tracks during playback', () => {
+      store.addTracks(['/a.mp3', '/b.mp3'])
+      store.currentIndex = 0
+      mockPlayerStore.isPlaying = true
+      // Add more tracks while playing
+      store.addTracks(['/c.mp3', '/d.mp3'])
+      // Playback state unchanged
+      expect(mockPlayerStore.stop).not.toHaveBeenCalled()
+      expect(mockPlayerStore.pause).not.toHaveBeenCalled()
+      expect(store.currentIndex).toBe(0)
+      expect(store.tracks).toHaveLength(4)
+    })
   })
 
   describe('removeTrack', () => {
@@ -176,7 +198,27 @@ describe('usePlaylistStore', () => {
       expect(store.currentIndex).toBe(1)
     })
 
-    it('resets currentIndex when removing current track', () => {
+    it('advances to next track when removing current playing track', () => {
+      store.currentIndex = 1
+      mockPlayerStore.isPlaying = true
+      store.removeTrack(1)
+      // Should advance: currentIndex set to 1 (was b, now c is at index 1)
+      expect(store.currentIndex).toBe(1)
+      mockPlayerStore.isPlaying = false
+    })
+
+    it('stops playback when removing the only playing track', () => {
+      store.clearPlaylist()
+      store.addTracks(['/only.mp3'])
+      store.currentIndex = 0
+      mockPlayerStore.isPlaying = true
+      mockPlayerStore.stop.mockClear()
+      store.removeTrack(0)
+      expect(mockPlayerStore.stop).toHaveBeenCalled()
+      expect(store.currentIndex).toBe(-1)
+    })
+
+    it('resets currentIndex when removing current non-playing track', () => {
       store.currentIndex = 1
       store.removeTrack(1)
       expect(store.currentIndex).toBe(-1)
@@ -189,6 +231,84 @@ describe('usePlaylistStore', () => {
     })
   })
 
+  describe('moveTrack', () => {
+    beforeEach(() => {
+      store.addTracks(['/a.mp3', '/b.mp3', '/c.mp3', '/d.mp3'])
+    })
+
+    it('moves track forward', () => {
+      store.moveTrack(0, 2)
+      expect(store.tracks[0].title).toBe('b')
+      expect(store.tracks[1].title).toBe('c')
+      expect(store.tracks[2].title).toBe('a')
+    })
+
+    it('moves track backward', () => {
+      store.moveTrack(3, 1)
+      expect(store.tracks[0].title).toBe('a')
+      expect(store.tracks[1].title).toBe('d')
+      expect(store.tracks[2].title).toBe('b')
+    })
+
+    it('updates currentIndex when moving the current track forward', () => {
+      store.currentIndex = 0
+      store.moveTrack(0, 2)
+      expect(store.currentIndex).toBe(2)
+    })
+
+    it('updates currentIndex when moving the current track backward', () => {
+      store.currentIndex = 3
+      store.moveTrack(3, 1)
+      expect(store.currentIndex).toBe(1)
+    })
+
+    it('adjusts currentIndex when moving a track from before to after current', () => {
+      store.currentIndex = 1
+      store.moveTrack(0, 3)
+      expect(store.currentIndex).toBe(0)
+    })
+
+    it('adjusts currentIndex when moving a track from after to before current', () => {
+      store.currentIndex = 1
+      store.moveTrack(3, 0)
+      expect(store.currentIndex).toBe(2)
+    })
+
+    it('does nothing when from equals to', () => {
+      store.moveTrack(1, 1)
+      expect(store.tracks[1].title).toBe('b')
+    })
+
+    it('ignores invalid indices', () => {
+      store.moveTrack(-1, 2)
+      store.moveTrack(0, 10)
+      expect(store.tracks).toHaveLength(4)
+    })
+  })
+
+  describe('newPlaylist', () => {
+    it('clears all tracks and resets index', () => {
+      store.addTracks(['/a.mp3', '/b.mp3'])
+      store.currentIndex = 1
+      store.newPlaylist()
+      expect(store.tracks).toEqual([])
+      expect(store.currentIndex).toBe(-1)
+    })
+
+    it('calls playerStore.stop()', () => {
+      store.addTracks(['/a.mp3'])
+      store.currentIndex = 0
+      store.newPlaylist()
+      expect(mockPlayerStore.stop).toHaveBeenCalled()
+    })
+
+    it('resets consecutiveErrors', () => {
+      store._consecutiveErrors = 5
+      store.newPlaylist()
+      expect(store._consecutiveErrors).toBe(0)
+    })
+  })
+
   describe('clearPlaylist', () => {
     it('removes all tracks and resets index', () => {
       store.addTracks(['/a.mp3', '/b.mp3'])
@@ -196,6 +316,13 @@ describe('usePlaylistStore', () => {
       store.clearPlaylist()
       expect(store.tracks).toEqual([])
       expect(store.currentIndex).toBe(-1)
+    })
+
+    it('calls playerStore.stop()', () => {
+      store.addTracks(['/a.mp3'])
+      store.currentIndex = 0
+      store.clearPlaylist()
+      expect(mockPlayerStore.stop).toHaveBeenCalled()
     })
   })
 

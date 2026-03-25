@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, computed } from 'vue'
+import { ref, watch, computed, onBeforeUnmount } from 'vue'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useSkinStore } from '@/stores/useSkinStore'
 
@@ -14,6 +14,11 @@ const playlistStore = usePlaylistStore()
 const skinStore = useSkinStore()
 
 const focusedIndex = ref(-1)
+const dragFromIndex = ref(-1)
+const dropTargetIndex = ref(-1)
+let mouseDownY = 0
+let pendingDragIndex = null
+const DRAG_THRESHOLD = 4
 
 function formatDuration(seconds) {
   if (!seconds || seconds === 0) return '--:--'
@@ -66,6 +71,23 @@ function handleKeyDown(event) {
   const key = event.key
   const trackCount = playlistStore.tracks.length
   if (trackCount === 0) return
+
+  // Alt+Arrow: reorder tracks
+  if (event.altKey && (key === 'ArrowDown' || key === 'ArrowUp')) {
+    event.preventDefault()
+    if (focusedIndex.value < 0) return
+    if (key === 'ArrowDown' && focusedIndex.value < trackCount - 1) {
+      playlistStore.moveTrack(focusedIndex.value, focusedIndex.value + 1)
+      focusedIndex.value++
+      ariaAnnouncement.value = `Morceau déplacé en position ${focusedIndex.value + 1}`
+    } else if (key === 'ArrowUp' && focusedIndex.value > 0) {
+      playlistStore.moveTrack(focusedIndex.value, focusedIndex.value - 1)
+      focusedIndex.value--
+      ariaAnnouncement.value = `Morceau déplacé en position ${focusedIndex.value + 1}`
+    }
+    scrollToFocused()
+    return
+  }
 
   switch (key) {
     case 'ArrowDown':
@@ -125,6 +147,59 @@ function handleFocus() {
   }
 }
 
+// Mouse-based reordering (HTML5 DnD doesn't work in Tauri webview)
+function handleMouseDown(event, index) {
+  // Only left click, ignore if modifier keys (for text selection etc.)
+  if (event.button !== 0 || event.ctrlKey || event.metaKey) return
+  mouseDownY = event.clientY
+  pendingDragIndex = index
+}
+
+function handleMouseMove(event) {
+  if (pendingDragIndex === null) return
+  // Start drag only after threshold
+  if (dragFromIndex.value < 0) {
+    if (Math.abs(event.clientY - mouseDownY) < DRAG_THRESHOLD) return
+    dragFromIndex.value = pendingDragIndex
+    document.body.style.cursor = 'grabbing'
+    document.addEventListener('mouseup', handleGlobalMouseUp)
+  }
+  // Find which track the cursor is over
+  const tracksContainer = event.currentTarget
+  const children = tracksContainer.children
+  for (let i = 0; i < children.length; i++) {
+    const rect = children[i].getBoundingClientRect()
+    if (event.clientY >= rect.top && event.clientY < rect.bottom) {
+      dropTargetIndex.value = i
+      return
+    }
+  }
+}
+
+function handleMouseUp() {
+  if (dragFromIndex.value >= 0 && dropTargetIndex.value >= 0 && dragFromIndex.value !== dropTargetIndex.value) {
+    playlistStore.moveTrack(dragFromIndex.value, dropTargetIndex.value)
+    focusedIndex.value = dropTargetIndex.value
+  }
+  cleanupDrag()
+}
+
+function handleGlobalMouseUp() {
+  cleanupDrag()
+}
+
+function cleanupDrag() {
+  dragFromIndex.value = -1
+  dropTargetIndex.value = -1
+  pendingDragIndex = null
+  document.body.style.cursor = ''
+  document.removeEventListener('mouseup', handleGlobalMouseUp)
+}
+
+onBeforeUnmount(() => {
+  document.removeEventListener('mouseup', handleGlobalMouseUp)
+})
+
 function trackAriaLabel(track, index) {
   const num = index + 1
   const artist = track.artist && track.artist !== 'Inconnu' ? track.artist : ''
@@ -168,21 +243,33 @@ function trackAriaLabel(track, index) {
     </div>
 
     <!-- Track list -->
-    <div v-if="!playlistStore.isEmpty" class="playlist-tracks">
+    <div
+      v-if="!playlistStore.isEmpty"
+      class="playlist-tracks"
+      @mousemove="handleMouseMove"
+      @mouseup="handleMouseUp"
+    >
       <div
         v-for="(track, index) in playlistStore.tracks"
         :id="`playlist-item-${index}`"
-        :key="index"
+        :key="`${track.path}-${index}`"
         class="playlist-track"
         role="option"
         :aria-selected="index === playlistStore.currentIndex"
         :aria-current="index === playlistStore.currentIndex ? 'true' : undefined"
         :aria-label="trackAriaLabel(track, index)"
-        :class="{ 'is-active': index === playlistStore.currentIndex, 'is-focused': index === focusedIndex }"
+        :class="{
+          'is-active': index === playlistStore.currentIndex,
+          'is-focused': index === focusedIndex,
+          'drop-target': index === dropTargetIndex && dragFromIndex !== index,
+          'is-dragging': index === dragFromIndex
+        }"
         :style="{
-          color: index === playlistStore.currentIndex ? skinStore.colors.activeTrack : skinStore.colors.playlistText
+          color: index === playlistStore.currentIndex ? skinStore.colors.activeTrack : skinStore.colors.playlistText,
+          borderTopColor: (index === dropTargetIndex && dragFromIndex !== index) ? skinStore.colors.activeTrack : 'transparent'
         }"
         @dblclick="handleDoubleClick(index)"
+        @mousedown="handleMouseDown($event, index)"
       >
         <span class="col-number">{{ index + 1 }}</span>
         <span class="col-title">{{ track.title }}</span>
@@ -272,6 +359,14 @@ function trackAriaLabel(track, index) {
 
 .playlist-track.is-active {
   font-weight: bold;
+}
+
+.playlist-track {
+  border-top: 2px solid transparent;
+}
+
+.playlist-track.is-dragging {
+  opacity: 0.4;
 }
 
 .col-number {

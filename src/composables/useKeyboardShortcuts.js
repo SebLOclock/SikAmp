@@ -22,6 +22,7 @@ let onLoadPlaylist = null
 let onToggleShuffle = null
 let onToggleRepeat = null
 let onToggleCrossfade = null
+let onNewPlaylist = null
 
 export function useKeyboardShortcuts() {
   const playerStore = usePlayerStore()
@@ -50,6 +51,10 @@ export function useKeyboardShortcuts() {
         case 'l':
           event.preventDefault()
           if (onLoadPlaylist) onLoadPlaylist()
+          return
+        case 'n':
+          event.preventDefault()
+          if (onNewPlaylist) onNewPlaylist()
           return
         case 't':
           event.preventDefault()
@@ -164,4 +169,5 @@ export function registerShortcutCallbacks(callbacks) {
   if (callbacks.onToggleShuffle) onToggleShuffle = callbacks.onToggleShuffle
   if (callbacks.onToggleRepeat) onToggleRepeat = callbacks.onToggleRepeat
   if (callbacks.onToggleCrossfade) onToggleCrossfade = callbacks.onToggleCrossfade
+  if (callbacks.onNewPlaylist) onNewPlaylist = callbacks.onNewPlaylist
 }

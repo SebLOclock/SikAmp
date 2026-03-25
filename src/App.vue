@@ -42,7 +42,8 @@ registerShortcutCallbacks({
   onToggleCrossfade: () => { actionBarRef.value?.executeAction('crossfade'); actionBarRef.value?.draw?.() },
   onOpenFile: () => { console.log('[App] Ctrl+O: open file (stub)') },
   onSavePlaylist: () => { console.log('[App] Ctrl+S: save playlist (stub)') },
-  onLoadPlaylist: () => { console.log('[App] Ctrl+L: load playlist (stub)') }
+  onLoadPlaylist: () => { console.log('[App] Ctrl+L: load playlist (stub)') },
+  onNewPlaylist: () => { playlistStore.newPlaylist() }
 })
 
 const { isDragging } = useFileDrop(handleFilesDropped)
