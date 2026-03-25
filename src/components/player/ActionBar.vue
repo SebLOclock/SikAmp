@@ -117,6 +117,9 @@ function executeAction(btnId) {
   }
 }
 
+// Expose toggle state, action, and draw for keyboard shortcuts
+defineExpose({ toggleState, executeAction, draw })
+
 onMounted(() => draw())
 watch(() => skinStore.renderMode, () => draw())
 </script>
@@ -138,14 +141,14 @@ watch(() => skinStore.renderMode, () => draw())
       class="sr-only-btn"
       role="switch"
       :aria-checked="toggleState[btn.id]"
-      :aria-label="btn.label"
+      :aria-label="btn.id === 'shuffle' ? 'Lecture aléatoire' : btn.id === 'repeat' ? 'Répétition' : 'Fondu enchaîné'"
       @click="executeAction(btn.id); draw()"
     />
     <button
       v-for="btn in BUTTONS.filter(b => !b.toggle)"
       :key="btn.id"
       class="sr-only-btn"
-      :aria-label="btn.label"
+      :aria-label="btn.id === 'skins' ? 'Skins' : 'Préférences'"
       @click="executeAction(btn.id)"
     />
   </div>

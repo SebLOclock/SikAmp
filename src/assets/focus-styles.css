@@ -1,0 +1,28 @@
+/* Focus indicators for accessibility (Story 1.8)
+ * Visible focus ring on all interactive elements
+ * Independent of skin — never hidden by sprites */
+
+/* Global focus-visible styles */
+:focus-visible {
+  outline: 1px dashed #00FF00;
+  outline-offset: 2px;
+  z-index: 5;
+}
+
+/* Hidden overlay buttons/inputs show focus ring without changing layout */
+.sr-only-btn:focus-visible,
+.sr-only-overlay:focus-visible {
+  outline: 1px dashed #00FF00;
+  outline-offset: 2px;
+  z-index: 5;
+}
+
+/* Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

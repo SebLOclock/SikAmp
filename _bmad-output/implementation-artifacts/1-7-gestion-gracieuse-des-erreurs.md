@@ -1,6 +1,6 @@
 # Story 1.7 : Gestion Gracieuse des Erreurs
 
-Status: review
+Status: done
 
 ## Story
 

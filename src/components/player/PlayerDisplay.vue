@@ -80,14 +80,6 @@ const stereoMode = computed(() => {
   return currentTrack.value.channels >= 2 ? 'stereo' : 'mono'
 })
 
-// Accessible announcement for screen readers
-const ariaAnnouncement = computed(() => {
-  if (playerStore.feedbackMessage) {
-    return playerStore.feedbackMessage.text
-  }
-  return `${scrollingTitle.value} — ${timeDisplay.value}`
-})
-
 function formatTimeDisplay(seconds) {
   if (!seconds || isNaN(seconds)) return '0:00'
   const mins = Math.floor(seconds / 60)
@@ -189,9 +181,13 @@ onUnmounted(() => {
       class="display-canvas"
       @click="handleCanvasClick"
     />
-    <!-- Accessible live region for screen readers (feedback + title) -->
+    <!-- Accessible live region for screen readers — title changes -->
     <div class="sr-only" aria-live="polite" role="status">
-      {{ ariaAnnouncement }}
+      {{ scrollingTitle }}
+    </div>
+    <!-- Accessible live region for feedback messages (errors, success, info) -->
+    <div class="sr-only" role="alert">
+      {{ playerStore.feedbackMessage ? playerStore.feedbackMessage.text : '' }}
     </div>
   </div>
 </template>

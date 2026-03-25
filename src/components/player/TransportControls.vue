@@ -148,11 +148,11 @@ watch(
       @mouseleave="handleMouseLeave"
     />
     <!-- Accessible hidden buttons -->
-    <button class="sr-only-btn" aria-label="Précédent" :disabled="isPrevDisabled" :aria-disabled="isPrevDisabled" @click="accessibleAction('prev')" />
+    <button class="sr-only-btn" aria-label="Morceau précédent" :disabled="isPrevDisabled" :aria-disabled="isPrevDisabled" @click="accessibleAction('prev')" />
     <button class="sr-only-btn" aria-label="Lecture" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('play')" />
     <button class="sr-only-btn" aria-label="Pause" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('pause')" />
-    <button class="sr-only-btn" aria-label="Stop" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('stop')" />
-    <button class="sr-only-btn" aria-label="Suivant" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('next')" />
+    <button class="sr-only-btn" aria-label="Arrêt" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('stop')" />
+    <button class="sr-only-btn" aria-label="Morceau suivant" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('next')" />
   </div>
 </template>
 

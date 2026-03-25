@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, computed } from 'vue'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useSkinStore } from '@/stores/useSkinStore'
 
@@ -13,6 +13,8 @@ defineProps({
 const playlistStore = usePlaylistStore()
 const skinStore = useSkinStore()
 
+const focusedIndex = ref(-1)
+
 function formatDuration(seconds) {
   if (!seconds || seconds === 0) return '--:--'
   const mins = Math.floor(seconds / 60)
@@ -23,10 +25,27 @@ function formatDuration(seconds) {
 const ariaAnnouncement = ref('')
 let previousTrackCount = playlistStore.trackCount
 
+const playlistAriaLabel = computed(() => {
+  const count = playlistStore.trackCount
+  if (count === 0) return 'Liste de lecture — vide'
+  return `Liste de lecture — ${count} morceau${count > 1 ? 'x' : ''}`
+})
+
+const activeDescendantId = computed(() => {
+  if (focusedIndex.value >= 0 && focusedIndex.value < playlistStore.tracks.length) {
+    return `playlist-item-${focusedIndex.value}`
+  }
+  return undefined
+})
+
 watch(() => playlistStore.trackCount, (newCount) => {
   const added = newCount - previousTrackCount
   if (added > 0) {
     ariaAnnouncement.value = `${added} morceau${added > 1 ? 'x' : ''} ajouté${added > 1 ? 's' : ''} à la playlist`
+  }
+  // Keep focusedIndex in bounds after track list changes
+  if (focusedIndex.value >= newCount) {
+    focusedIndex.value = newCount - 1
   }
   previousTrackCount = newCount
 })
@@ -42,17 +61,94 @@ watch(() => playlistStore.isEmpty, (isEmpty, wasEmpty) => {
 function handleDoubleClick(index) {
   playlistStore.playTrack(index)
 }
+
+function handleKeyDown(event) {
+  const key = event.key
+  const trackCount = playlistStore.tracks.length
+  if (trackCount === 0) return
+
+  switch (key) {
+    case 'ArrowDown':
+      event.preventDefault()
+      if (focusedIndex.value < trackCount - 1) {
+        focusedIndex.value++
+      }
+      scrollToFocused()
+      break
+    case 'ArrowUp':
+      event.preventDefault()
+      if (focusedIndex.value > 0) {
+        focusedIndex.value--
+      } else if (focusedIndex.value < 0) {
+        focusedIndex.value = 0
+      }
+      scrollToFocused()
+      break
+    case 'Enter':
+      event.preventDefault()
+      if (focusedIndex.value >= 0) {
+        playlistStore.playTrack(focusedIndex.value)
+      }
+      break
+    case 'Delete':
+    case 'Backspace':
+      event.preventDefault()
+      if (focusedIndex.value >= 0) {
+        const removeIdx = focusedIndex.value
+        playlistStore.removeTrack(removeIdx)
+        if (focusedIndex.value >= playlistStore.tracks.length) {
+          focusedIndex.value = playlistStore.tracks.length - 1
+        }
+      }
+      break
+    case 'Home':
+      event.preventDefault()
+      focusedIndex.value = 0
+      scrollToFocused()
+      break
+    case 'End':
+      event.preventDefault()
+      focusedIndex.value = trackCount - 1
+      scrollToFocused()
+      break
+  }
+}
+
+function scrollToFocused() {
+  const el = document.getElementById(`playlist-item-${focusedIndex.value}`)
+  if (el) el.scrollIntoView({ block: 'nearest' })
+}
+
+function handleFocus() {
+  if (focusedIndex.value < 0 && playlistStore.tracks.length > 0) {
+    focusedIndex.value = playlistStore.currentIndex >= 0 ? playlistStore.currentIndex : 0
+  }
+}
+
+function trackAriaLabel(track, index) {
+  const num = index + 1
+  const artist = track.artist && track.artist !== 'Inconnu' ? track.artist : ''
+  const duration = formatDuration(track.duration)
+  const parts = [`${num}. ${track.title}`]
+  if (artist) parts.push(artist)
+  parts.push(duration)
+  return parts.join(' — ')
+}
 </script>
 
 <template>
   <div
     class="playlist-panel"
     role="listbox"
-    aria-label="Playlist"
+    :aria-label="playlistAriaLabel"
+    :aria-activedescendant="activeDescendantId"
+    tabindex="0"
     :style="{
       backgroundColor: skinStore.colors.playlistBg,
       color: skinStore.colors.playlistText
     }"
+    @keydown="handleKeyDown"
+    @focus="handleFocus"
   >
     <!-- Drag overlay -->
     <div
@@ -75,11 +171,14 @@ function handleDoubleClick(index) {
     <div v-if="!playlistStore.isEmpty" class="playlist-tracks">
       <div
         v-for="(track, index) in playlistStore.tracks"
+        :id="`playlist-item-${index}`"
         :key="index"
         class="playlist-track"
         role="option"
         :aria-selected="index === playlistStore.currentIndex"
-        :class="{ 'is-active': index === playlistStore.currentIndex }"
+        :aria-current="index === playlistStore.currentIndex ? 'true' : undefined"
+        :aria-label="trackAriaLabel(track, index)"
+        :class="{ 'is-active': index === playlistStore.currentIndex, 'is-focused': index === focusedIndex }"
         :style="{
           color: index === playlistStore.currentIndex ? skinStore.colors.activeTrack : skinStore.colors.playlistText
         }"
@@ -163,6 +262,12 @@ function handleDoubleClick(index) {
 
 .playlist-track:hover {
   background-color: rgba(0, 255, 0, 0.05);
+}
+
+.playlist-track.is-focused {
+  background-color: rgba(0, 255, 0, 0.1);
+  outline: 1px dashed #00FF00;
+  outline-offset: -1px;
 }
 
 .playlist-track.is-active {
