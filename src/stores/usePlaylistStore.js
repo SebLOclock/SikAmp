@@ -15,7 +15,9 @@ export const usePlaylistStore = defineStore('playlist', {
     currentIndex: -1,
     isShuffled: false,
     repeatMode: 'none', // 'none' | 'all' | 'one'
-    _consecutiveErrors: 0
+    _consecutiveErrors: 0,
+    playlistName: null,
+    playlistPath: null
   }),
 
   getters: {
@@ -129,6 +131,8 @@ export const usePlaylistStore = defineStore('playlist', {
       this.tracks = []
       this.currentIndex = -1
       this._consecutiveErrors = 0
+      this.playlistName = null
+      this.playlistPath = null
       console.log('[PlaylistStore] New playlist created')
     },
 
@@ -138,6 +142,8 @@ export const usePlaylistStore = defineStore('playlist', {
       this.tracks = []
       this.currentIndex = -1
       this._consecutiveErrors = 0
+      this.playlistName = null
+      this.playlistPath = null
       console.log('[PlaylistStore] Playlist cleared')
     },
 
@@ -146,6 +152,13 @@ export const usePlaylistStore = defineStore('playlist', {
       this.currentIndex = index
       const track = this.tracks[index]
       const playerStore = usePlayerStore()
+
+      // PRE-CHECK: skip missing tracks
+      if (track.missing) {
+        console.warn(`[PlaylistStore] Skipping missing track: ${track.title}`)
+        this._handlePlaybackError()
+        return
+      }
 
       // PRE-CHECK: validate format before attempting playback
       if (!isSupportedFormat(track.path)) {
@@ -257,6 +270,104 @@ export const usePlaylistStore = defineStore('playlist', {
       if (this.tracks.length === 0) return null
       const prevIndex = this.currentIndex <= 0 ? this.tracks.length - 1 : this.currentIndex - 1
       return this.tracks[prevIndex]
+    },
+
+    async savePlaylist() {
+      if (this.tracks.length === 0) return
+
+      const playerStore = usePlayerStore()
+
+      let savePath = this.playlistPath
+      if (!savePath) {
+        try {
+          const { save } = await import('@tauri-apps/plugin-dialog')
+          savePath = await save({
+            filters: [{ name: 'Playlist', extensions: ['m3u8'] }],
+            defaultPath: 'ma-playlist.m3u8'
+          })
+        } catch (err) {
+          console.warn('[PlaylistStore] Save dialog error:', err)
+          return
+        }
+        if (!savePath) return // user cancelled
+      }
+
+      const tracksData = this.tracks.map(t => ({
+        path: t.path,
+        title: t.title || '',
+        artist: t.artist || '',
+        duration: t.duration || 0
+      }))
+
+      try {
+        await invoke('save_playlist', { path: savePath, tracks: tracksData })
+        this.playlistPath = savePath
+        // Extract name from path
+        const fileName = savePath.split('/').pop().split('\\').pop().replace(/\.m3u8?$/i, '')
+        this.playlistName = fileName
+        console.log('[PlaylistStore] Playlist saved:', savePath)
+        playerStore.showFeedback('Playlist sauvegardée', 'success')
+      } catch (err) {
+        console.warn('[PlaylistStore] Failed to save:', err)
+        playerStore.showFeedback('Erreur de sauvegarde', 'error')
+      }
+    },
+
+    async loadPlaylist() {
+      const playerStore = usePlayerStore()
+
+      let filePath
+      try {
+        const { open } = await import('@tauri-apps/plugin-dialog')
+        filePath = await open({
+          filters: [{ name: 'Playlist', extensions: ['m3u', 'm3u8'] }],
+          multiple: false
+        })
+      } catch (err) {
+        console.warn('[PlaylistStore] Open dialog error:', err)
+        return
+      }
+      if (!filePath) return // user cancelled
+
+      try {
+        const entries = await invoke('load_playlist', { path: filePath })
+
+        // Replace current playlist
+        playerStore.stop()
+        this.tracks = entries.map(e => ({
+          path: e.path,
+          title: e.title || e.path.split('/').pop().split('\\').pop().replace(/\.[^.]+$/, ''),
+          artist: e.artist || 'Inconnu',
+          duration: e.duration || 0,
+          bitrate: null,
+          sampleRate: null,
+          channels: null,
+          missing: !e.exists
+        }))
+        this.currentIndex = -1
+        this._consecutiveErrors = 0
+
+        // Set playlist path/name
+        this.playlistPath = filePath
+        const fileName = filePath.split('/').pop().split('\\').pop().replace(/\.m3u8?$/i, '')
+        this.playlistName = fileName
+
+        console.log(`[PlaylistStore] Playlist loaded: ${filePath}, ${entries.length} tracks`)
+        playerStore.showFeedback(`Playlist chargée, ${entries.length} morceaux`, 'success')
+
+        // Enrich metadata for existing (non-missing) tracks only
+        const nonMissingTracks = this.tracks.filter(t => !t.missing)
+        if (nonMissingTracks.length > 0) {
+          for (let i = 0; i < this.tracks.length; i++) {
+            if (!this.tracks[i].missing) {
+              this._enrichMetadata(i, 1)
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('[PlaylistStore] Failed to load:', err)
+        playerStore.showFeedback('Erreur de chargement', 'error')
+      }
     },
 
     // Auto-advance is now handled by playerStore.onEnded callback

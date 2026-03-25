@@ -3,8 +3,9 @@ import { setActivePinia, createPinia } from 'pinia'
 import { usePlaylistStore } from './usePlaylistStore'
 
 // Mock Tauri invoke
+const mockInvoke = vi.fn().mockRejectedValue(new Error('not in Tauri'))
 vi.mock('@tauri-apps/api/core', () => ({
-  invoke: vi.fn().mockRejectedValue(new Error('not in Tauri'))
+  invoke: (...args) => mockInvoke(...args)
 }))
 
 // Mock audioEngine
@@ -57,7 +58,10 @@ describe('usePlaylistStore', () => {
     mockPlayerStore.play.mockClear()
     mockPlayerStore.stop.mockClear()
     mockPlayerStore.clearFeedback.mockClear()
+    mockPlayerStore.showFeedback.mockClear()
     mockPlayerStore._handleManualCrossfadeNext.mockClear()
+    mockInvoke.mockReset()
+    mockInvoke.mockRejectedValue(new Error('not in Tauri'))
   })
 
   describe('initial state', () => {
@@ -497,6 +501,107 @@ describe('usePlaylistStore', () => {
       store.addTracks(['/a.mp3', '/b.mp3'])
       store.currentIndex = 0
       expect(store.getPreviousTrack().title).toBe('b')
+    })
+  })
+
+  describe('playlistName and playlistPath state', () => {
+    it('initializes playlistName and playlistPath as null', () => {
+      expect(store.playlistName).toBeNull()
+      expect(store.playlistPath).toBeNull()
+    })
+
+    it('newPlaylist resets playlistName and playlistPath', () => {
+      store.playlistName = 'My Playlist'
+      store.playlistPath = '/tmp/playlist.m3u8'
+      store.newPlaylist()
+      expect(store.playlistName).toBeNull()
+      expect(store.playlistPath).toBeNull()
+    })
+
+    it('clearPlaylist resets playlistName and playlistPath', () => {
+      store.playlistName = 'My Playlist'
+      store.playlistPath = '/tmp/playlist.m3u8'
+      store.clearPlaylist()
+      expect(store.playlistName).toBeNull()
+      expect(store.playlistPath).toBeNull()
+    })
+  })
+
+  describe('savePlaylist', () => {
+    it('does nothing when playlist is empty', async () => {
+      await store.savePlaylist()
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+
+    it('saves directly when playlistPath exists (no dialog)', async () => {
+      store.addTracks(['/music/a.mp3', '/music/b.flac'])
+      store.playlistPath = '/tmp/my-playlist.m3u8'
+      mockInvoke.mockResolvedValueOnce(undefined)
+
+      await store.savePlaylist()
+
+      expect(mockInvoke).toHaveBeenCalledWith('save_playlist', {
+        path: '/tmp/my-playlist.m3u8',
+        tracks: expect.arrayContaining([
+          expect.objectContaining({ path: '/music/a.mp3' }),
+          expect.objectContaining({ path: '/music/b.flac' })
+        ])
+      })
+      expect(store.playlistPath).toBe('/tmp/my-playlist.m3u8')
+      expect(store.playlistName).toBe('my-playlist')
+      expect(mockPlayerStore.showFeedback).toHaveBeenCalledWith('Playlist sauvegardée', 'success')
+    })
+
+    it('shows error feedback on save failure', async () => {
+      store.addTracks(['/music/a.mp3'])
+      store.playlistPath = '/tmp/test.m3u8'
+      mockInvoke.mockRejectedValueOnce(new Error('write error'))
+
+      await store.savePlaylist()
+
+      expect(mockPlayerStore.showFeedback).toHaveBeenCalledWith('Erreur de sauvegarde', 'error')
+    })
+  })
+
+  describe('loadPlaylist', () => {
+    it('replaces tracks with loaded entries', async () => {
+      // Mock dialog to return a path
+      vi.doMock('@tauri-apps/plugin-dialog', () => ({
+        open: vi.fn().mockResolvedValue('/tmp/loaded.m3u8')
+      }))
+
+      store.addTracks(['/old/track.mp3'])
+      store.currentIndex = 0
+
+      const loadedEntries = [
+        { path: '/music/a.mp3', title: 'Song A', artist: 'Artist A', duration: 200, exists: true },
+        { path: '/music/missing.mp3', title: 'Gone', artist: 'Nobody', duration: 100, exists: false }
+      ]
+      mockInvoke.mockResolvedValueOnce(loadedEntries)
+
+      await store.loadPlaylist()
+
+      expect(store.tracks).toHaveLength(2)
+      expect(store.tracks[0].title).toBe('Song A')
+      expect(store.tracks[0].missing).toBeFalsy()
+      expect(store.tracks[1].title).toBe('Gone')
+      expect(store.tracks[1].missing).toBe(true)
+      expect(store.playlistPath).toBe('/tmp/loaded.m3u8')
+      expect(store.playlistName).toBe('loaded')
+      expect(store.currentIndex).toBe(-1)
+      expect(mockPlayerStore.showFeedback).toHaveBeenCalledWith('Playlist chargée, 2 morceaux', 'success')
+    })
+
+    it('shows error feedback on load failure', async () => {
+      vi.doMock('@tauri-apps/plugin-dialog', () => ({
+        open: vi.fn().mockResolvedValue('/tmp/bad.m3u8')
+      }))
+
+      mockInvoke.mockRejectedValueOnce(new Error('parse error'))
+
+      await store.loadPlaylist()
+
+      expect(mockPlayerStore.showFeedback).toHaveBeenCalledWith('Erreur de chargement', 'error')
     })
   })
 })

@@ -41,8 +41,8 @@ registerShortcutCallbacks({
   onToggleRepeat: () => { actionBarRef.value?.executeAction('repeat'); actionBarRef.value?.draw?.() },
   onToggleCrossfade: () => { actionBarRef.value?.executeAction('crossfade'); actionBarRef.value?.draw?.() },
   onOpenFile: () => { console.log('[App] Ctrl+O: open file (stub)') },
-  onSavePlaylist: () => { console.log('[App] Ctrl+S: save playlist (stub)') },
-  onLoadPlaylist: () => { console.log('[App] Ctrl+L: load playlist (stub)') },
+  onSavePlaylist: () => { playlistStore.savePlaylist() },
+  onLoadPlaylist: () => { playlistStore.loadPlaylist() },
   onNewPlaylist: () => { playlistStore.newPlaylist() }
 })
 

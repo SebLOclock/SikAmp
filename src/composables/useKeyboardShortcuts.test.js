@@ -228,6 +228,53 @@ describe('useKeyboardShortcuts', () => {
     })
   })
 
+  describe('Ctrl+S save playlist', () => {
+    it('calls onSavePlaylist callback', async () => {
+      const onSavePlaylist = vi.fn()
+      const { registerShortcutCallbacks } = await import('./useKeyboardShortcuts.js')
+      registerShortcutCallbacks({ onSavePlaylist })
+
+      fireKey('s', { ctrlKey: true })
+      expect(onSavePlaylist).toHaveBeenCalled()
+    })
+
+    it('prevents default browser save', async () => {
+      const { registerShortcutCallbacks } = await import('./useKeyboardShortcuts.js')
+      registerShortcutCallbacks({ onSavePlaylist: vi.fn() })
+
+      const event = fireKey('s', { ctrlKey: true })
+      expect(event.preventDefault).toHaveBeenCalled()
+    })
+  })
+
+  describe('Ctrl+L load playlist', () => {
+    it('calls onLoadPlaylist callback', async () => {
+      const onLoadPlaylist = vi.fn()
+      const { registerShortcutCallbacks } = await import('./useKeyboardShortcuts.js')
+      registerShortcutCallbacks({ onLoadPlaylist })
+
+      fireKey('l', { ctrlKey: true })
+      expect(onLoadPlaylist).toHaveBeenCalled()
+    })
+
+    it('prevents default browser behavior', async () => {
+      const { registerShortcutCallbacks } = await import('./useKeyboardShortcuts.js')
+      registerShortcutCallbacks({ onLoadPlaylist: vi.fn() })
+
+      const event = fireKey('l', { ctrlKey: true })
+      expect(event.preventDefault).toHaveBeenCalled()
+    })
+
+    it('works with metaKey (macOS)', async () => {
+      const onLoadPlaylist = vi.fn()
+      const { registerShortcutCallbacks } = await import('./useKeyboardShortcuts.js')
+      registerShortcutCallbacks({ onLoadPlaylist })
+
+      fireKey('l', { metaKey: true })
+      expect(onLoadPlaylist).toHaveBeenCalled()
+    })
+  })
+
   describe('disabled when playlist is empty', () => {
     it('does not toggle play/pause on Space when playlist is empty', () => {
       // playlist is empty by default

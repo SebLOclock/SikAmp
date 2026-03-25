@@ -202,6 +202,9 @@ onBeforeUnmount(() => {
 
 function trackAriaLabel(track, index) {
   const num = index + 1
+  if (track.missing) {
+    return `${num}. Morceau introuvable : ${track.title}`
+  }
   const artist = track.artist && track.artist !== 'Inconnu' ? track.artist : ''
   const duration = formatDuration(track.duration)
   const parts = [`${num}. ${track.title}`]
@@ -257,12 +260,14 @@ function trackAriaLabel(track, index) {
         role="option"
         :aria-selected="index === playlistStore.currentIndex"
         :aria-current="index === playlistStore.currentIndex ? 'true' : undefined"
+        :aria-disabled="track.missing ? 'true' : undefined"
         :aria-label="trackAriaLabel(track, index)"
         :class="{
           'is-active': index === playlistStore.currentIndex,
           'is-focused': index === focusedIndex,
           'drop-target': index === dropTargetIndex && dragFromIndex !== index,
-          'is-dragging': index === dragFromIndex
+          'is-dragging': index === dragFromIndex,
+          'playlist-track--missing': track.missing
         }"
         :style="{
           color: index === playlistStore.currentIndex ? skinStore.colors.activeTrack : skinStore.colors.playlistText,
@@ -367,6 +372,11 @@ function trackAriaLabel(track, index) {
 
 .playlist-track.is-dragging {
   opacity: 0.4;
+}
+
+.playlist-track--missing {
+  opacity: 0.4;
+  text-decoration: line-through;
 }
 
 .col-number {

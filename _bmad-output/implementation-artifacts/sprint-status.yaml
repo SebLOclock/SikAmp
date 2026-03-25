@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-21
-last_updated: 2026-03-25T00:00:00
+last_updated: 2026-03-25T12:00:00
 project: SikAmp
 project_key: NOKEY
 tracking_system: file-system
@@ -63,8 +63,8 @@ development_status:
 
   # Epic 3 : Gestion des Playlists
   epic-3: in-progress
-  3-1-creer-et-editer-des-playlists: review
-  3-2-sauvegarder-et-charger-des-playlists: backlog
+  3-1-creer-et-editer-des-playlists: done
+  3-2-sauvegarder-et-charger-des-playlists: review
   3-3-menu-contextuel-playlist: backlog
   epic-3-retrospective: optional
 
