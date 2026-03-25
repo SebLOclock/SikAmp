@@ -1,6 +1,6 @@
 # Story 1.9 : Double Mode de Rendu et Redimensionnement
 
-Status: review
+Status: done
 
 ## Story
 

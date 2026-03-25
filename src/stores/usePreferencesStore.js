@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import { load } from '@tauri-apps/plugin-store'
-import { DEFAULT_VOLUME } from '@/utils/constants.js'
+import { DEFAULT_VOLUME, DEFAULT_CROSSFADE_DURATION, MAX_CROSSFADE_DURATION } from '@/utils/constants.js'
 
 const STORE_FILE = 'preferences.json'
 const DEBOUNCE_MS = 500
@@ -19,6 +19,8 @@ export const usePreferencesStore = defineStore('preferences', {
   state: () => ({
     volume: DEFAULT_VOLUME,
     jingleEnabled: true,
+    crossfadeEnabled: true,
+    crossfadeDuration: DEFAULT_CROSSFADE_DURATION,
     renderMode: 'retro',
     windowState: null,
     scaleFactor: null
@@ -50,7 +52,15 @@ export const usePreferencesStore = defineStore('preferences', {
         if (savedScaleFactor === 1 || savedScaleFactor === 2 || savedScaleFactor === 3) {
           this.scaleFactor = savedScaleFactor
         }
-        console.log('[PreferencesStore] Loaded preferences — volume:', this.volume, 'jingle:', this.jingleEnabled, 'renderMode:', this.renderMode)
+        const savedCrossfadeEnabled = await s.get('crossfadeEnabled')
+        if (savedCrossfadeEnabled !== null && savedCrossfadeEnabled !== undefined) {
+          this.crossfadeEnabled = savedCrossfadeEnabled
+        }
+        const savedCrossfadeDuration = await s.get('crossfadeDuration')
+        if (typeof savedCrossfadeDuration === 'number' && savedCrossfadeDuration >= 1 && savedCrossfadeDuration <= MAX_CROSSFADE_DURATION) {
+          this.crossfadeDuration = savedCrossfadeDuration
+        }
+        console.log('[PreferencesStore] Loaded preferences — volume:', this.volume, 'jingle:', this.jingleEnabled, 'renderMode:', this.renderMode, 'crossfade:', this.crossfadeEnabled)
       } catch (err) {
         console.warn('[PreferencesStore] Failed to load preferences:', err)
       }
@@ -76,6 +86,18 @@ export const usePreferencesStore = defineStore('preferences', {
       if (factor !== 1 && factor !== 2 && factor !== 3) return
       this.scaleFactor = factor
       this._debouncedSave('scaleFactor', factor)
+    },
+
+    setCrossfadeEnabled(enabled) {
+      this.crossfadeEnabled = !!enabled
+      console.log('[PreferencesStore] Crossfade toggled:', this.crossfadeEnabled)
+      this._debouncedSave('crossfadeEnabled', this.crossfadeEnabled)
+    },
+
+    setCrossfadeDuration(seconds) {
+      const clamped = Math.max(1, Math.min(MAX_CROSSFADE_DURATION, Math.round(seconds)))
+      this.crossfadeDuration = clamped
+      this._debouncedSave('crossfadeDuration', clamped)
     },
 
     toggleJingle() {

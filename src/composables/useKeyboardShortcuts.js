@@ -51,6 +51,10 @@ export function useKeyboardShortcuts() {
           event.preventDefault()
           if (onLoadPlaylist) onLoadPlaylist()
           return
+        case 't':
+          event.preventDefault()
+          if (onToggleCrossfade) onToggleCrossfade()
+          return
         default:
           break
       }

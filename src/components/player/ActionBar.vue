@@ -1,10 +1,12 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useSkinStore } from '@/stores/useSkinStore'
+import { usePreferencesStore } from '@/stores/usePreferencesStore'
 import { setupCanvas, drawBackground, drawButton } from '@/engine/skinRenderer'
 
 const canvasRef = ref(null)
 const skinStore = useSkinStore()
+const preferencesStore = usePreferencesStore()
 
 const CANVAS_WIDTH = 800
 const CANVAS_HEIGHT = 28
@@ -108,8 +110,13 @@ const emit = defineEmits(['prefs'])
 function executeAction(btnId) {
   const btn = BUTTONS.find(b => b.id === btnId)
   if (btn && btn.toggle) {
-    toggleState.value[btnId] = !toggleState.value[btnId]
-    console.log(`[ActionBar] ${btnId} toggled:`, toggleState.value[btnId])
+    if (btnId === 'crossfade') {
+      preferencesStore.setCrossfadeEnabled(!preferencesStore.crossfadeEnabled)
+      toggleState.value.crossfade = preferencesStore.crossfadeEnabled
+    } else {
+      toggleState.value[btnId] = !toggleState.value[btnId]
+    }
+    console.log(`[ActionBar] ${btnId} toggled:`, btnId === 'crossfade' ? preferencesStore.crossfadeEnabled : toggleState.value[btnId])
   } else if (btnId === 'prefs') {
     emit('prefs')
   } else {
@@ -120,8 +127,15 @@ function executeAction(btnId) {
 // Expose toggle state, action, and draw for keyboard shortcuts
 defineExpose({ toggleState, executeAction, draw })
 
-onMounted(() => draw())
+onMounted(() => {
+  toggleState.value.crossfade = preferencesStore.crossfadeEnabled
+  draw()
+})
 watch(() => skinStore.renderMode, () => draw())
+watch(() => preferencesStore.crossfadeEnabled, (val) => {
+  toggleState.value.crossfade = val
+  draw()
+})
 </script>
 
 <template>
@@ -140,7 +154,7 @@ watch(() => skinStore.renderMode, () => draw())
       :key="btn.id"
       class="sr-only-btn"
       role="switch"
-      :aria-checked="toggleState[btn.id]"
+      :aria-checked="btn.id === 'crossfade' ? preferencesStore.crossfadeEnabled : toggleState[btn.id]"
       :aria-label="btn.id === 'shuffle' ? 'Lecture aléatoire' : btn.id === 'repeat' ? 'Répétition' : 'Fondu enchaîné'"
       @click="executeAction(btn.id); draw()"
     />

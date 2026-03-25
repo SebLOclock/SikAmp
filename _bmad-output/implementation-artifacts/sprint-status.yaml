@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-21
-last_updated: 2026-03-25
+last_updated: 2026-03-25T12:00:00
 project: SikAmp
 project_key: NOKEY
 tracking_system: file-system
@@ -51,13 +51,13 @@ development_status:
   1-5-drag-drop-et-playlist-basique: done
   1-6-jingle-au-lancement: done
   1-7-gestion-gracieuse-des-erreurs: done
-  1-8-accessibilite-clavier-et-lecteurs-d-ecran: review
-  1-9-double-mode-de-rendu-et-redimensionnement: review
-  epic-1-retrospective: optional
+  1-8-accessibilite-clavier-et-lecteurs-d-ecran: done
+  1-9-double-mode-de-rendu-et-redimensionnement: done
+  epic-1-retrospective: done
 
   # Epic 2 : Crossfade — La Feature Signature
-  epic-2: backlog
-  2-1-crossfade-equal-power-entre-morceaux: backlog
+  epic-2: in-progress
+  2-1-crossfade-equal-power-entre-morceaux: review
   2-2-configuration-de-la-duree-du-crossfade: backlog
   epic-2-retrospective: optional
 

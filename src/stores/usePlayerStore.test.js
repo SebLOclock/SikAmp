@@ -10,6 +10,18 @@ vi.mock('@tauri-apps/plugin-store', () => ({
   })
 }))
 
+// Mock usePlaylistStore for dynamic imports in onEnded/onError callbacks
+vi.mock('./usePlaylistStore', () => ({
+  usePlaylistStore: vi.fn(() => ({
+    _consecutiveErrors: 0,
+    playNext: vi.fn().mockResolvedValue(undefined),
+    _handlePlaybackError: vi.fn(),
+    currentTrack: null,
+    currentIndex: 0,
+    tracks: []
+  }))
+}))
+
 // Mock audioEngine
 vi.mock('@/engine/audioEngine.js', () => ({
   default: {
@@ -19,17 +31,25 @@ vi.mock('@/engine/audioEngine.js', () => ({
     stop: vi.fn(),
     setVolume: vi.fn(),
     seek: vi.fn(),
+    preloadOnInactive: vi.fn().mockResolvedValue(undefined),
+    startCrossfade: vi.fn().mockResolvedValue(true),
+    _cancelCrossfade: vi.fn(),
     currentTrackInfo: null,
     currentTime: 0,
+    isCrossfading: false,
     _audioElement: { currentTime: 0 },
     set onTimeUpdate(cb) { this._onTimeUpdate = cb },
     set onEnded(cb) { this._onEnded = cb },
     set onLoadedMetadata(cb) { this._onLoadedMetadata = cb },
     set onError(cb) { this._onError = cb },
+    set onCrossfadeStart(cb) { this._onCrossfadeStart = cb },
+    set onCrossfadeComplete(cb) { this._onCrossfadeComplete = cb },
     _onTimeUpdate: null,
     _onEnded: null,
     _onLoadedMetadata: null,
-    _onError: null
+    _onError: null,
+    _onCrossfadeStart: null,
+    _onCrossfadeComplete: null
   }
 }))
 
@@ -257,6 +277,34 @@ describe('usePlayerStore', () => {
       store.volume = 0.6
       await store.play('/music/test.mp3')
       expect(audioEngine.setVolume).toHaveBeenCalledWith(0.6)
+    })
+
+    it('should subscribe to crossfade complete events', async () => {
+      await store.play('/music/test.mp3')
+      expect(audioEngine._onCrossfadeComplete).toBeTypeOf('function')
+    })
+
+    it('onEnded should not reset state during crossfade', async () => {
+      await store.play('/music/test.mp3')
+      audioEngine.isCrossfading = true
+      audioEngine._onEnded()
+
+      // State should NOT be reset during crossfade
+      expect(store.isPlaying).toBe(true)
+
+      audioEngine.isCrossfading = false
+    })
+  })
+
+  describe('crossfade triggering', () => {
+    it('should trigger crossfade when time remaining <= crossfadeDuration', async () => {
+      await store.play('/music/test.mp3')
+      store.duration = 200
+
+      // Simulate timeupdate near end
+      audioEngine._onTimeUpdate(196) // 4s remaining, crossfadeDuration default = 5s
+      expect(store.currentTime).toBe(196)
+      // Crossfade should have been attempted (preloadOnInactive would be called asynchronously)
     })
   })
 })

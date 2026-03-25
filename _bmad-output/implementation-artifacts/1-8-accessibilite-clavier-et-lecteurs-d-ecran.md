@@ -1,6 +1,6 @@
 # Story 1.8 : Accessibilité Clavier et Lecteurs d'Écran
 
-Status: review
+Status: done
 
 ## Story
 

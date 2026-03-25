@@ -159,6 +159,108 @@ describe('usePreferencesStore', () => {
     })
   })
 
+  describe('crossfade', () => {
+    it('should default crossfadeEnabled to true', async () => {
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+      expect(store.crossfadeEnabled).toBe(true)
+    })
+
+    it('should default crossfadeDuration to 5', async () => {
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+      expect(store.crossfadeDuration).toBe(5)
+    })
+
+    it('should set crossfadeEnabled', async () => {
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+      store.setCrossfadeEnabled(false)
+      expect(store.crossfadeEnabled).toBe(false)
+      store.setCrossfadeEnabled(true)
+      expect(store.crossfadeEnabled).toBe(true)
+    })
+
+    it('should persist crossfadeEnabled', async () => {
+      vi.useFakeTimers()
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+
+      store.setCrossfadeEnabled(false)
+      await vi.advanceTimersByTimeAsync(600)
+
+      expect(mockStore.set).toHaveBeenCalledWith('crossfadeEnabled', false)
+      expect(mockStore.save).toHaveBeenCalled()
+      vi.useRealTimers()
+    })
+
+    it('should set crossfadeDuration and clamp to 1-12', async () => {
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+
+      store.setCrossfadeDuration(8)
+      expect(store.crossfadeDuration).toBe(8)
+
+      store.setCrossfadeDuration(0)
+      expect(store.crossfadeDuration).toBe(1)
+
+      store.setCrossfadeDuration(20)
+      expect(store.crossfadeDuration).toBe(12)
+    })
+
+    it('should persist crossfadeDuration', async () => {
+      vi.useFakeTimers()
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+
+      store.setCrossfadeDuration(8)
+      await vi.advanceTimersByTimeAsync(600)
+
+      expect(mockStore.set).toHaveBeenCalledWith('crossfadeDuration', 8)
+      expect(mockStore.save).toHaveBeenCalled()
+      vi.useRealTimers()
+    })
+
+    it('should load crossfadeEnabled from Tauri store', async () => {
+      mockStore.get.mockImplementation((key) => {
+        if (key === 'crossfadeEnabled') return Promise.resolve(false)
+        return Promise.resolve(null)
+      })
+
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+      await store.loadPreferences()
+
+      expect(store.crossfadeEnabled).toBe(false)
+    })
+
+    it('should load crossfadeDuration from Tauri store', async () => {
+      mockStore.get.mockImplementation((key) => {
+        if (key === 'crossfadeDuration') return Promise.resolve(8)
+        return Promise.resolve(null)
+      })
+
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+      await store.loadPreferences()
+
+      expect(store.crossfadeDuration).toBe(8)
+    })
+
+    it('should reject invalid crossfadeDuration from Tauri store', async () => {
+      mockStore.get.mockImplementation((key) => {
+        if (key === 'crossfadeDuration') return Promise.resolve(99)
+        return Promise.resolve(null)
+      })
+
+      const { usePreferencesStore } = await import('./usePreferencesStore.js')
+      const store = usePreferencesStore()
+      await store.loadPreferences()
+
+      expect(store.crossfadeDuration).toBe(5) // Default
+    })
+  })
+
   describe('scaleFactor', () => {
     it('should default to null', async () => {
       const { usePreferencesStore } = await import('./usePreferencesStore.js')

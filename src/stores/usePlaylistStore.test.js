@@ -298,6 +298,45 @@ describe('usePlaylistStore', () => {
     })
   })
 
+  describe('peekNextTrack', () => {
+    it('returns null for empty playlist', () => {
+      expect(store.peekNextTrack()).toBeNull()
+    })
+
+    it('returns next track with index', () => {
+      store.addTracks(['/a.mp3', '/b.mp3', '/c.mp3'])
+      store.currentIndex = 0
+      const result = store.peekNextTrack()
+      expect(result.track.title).toBe('b')
+      expect(result.index).toBe(1)
+    })
+
+    it('returns null at end of playlist in none mode', () => {
+      store.addTracks(['/a.mp3', '/b.mp3'])
+      store.currentIndex = 1
+      store.repeatMode = 'none'
+      expect(store.peekNextTrack()).toBeNull()
+    })
+
+    it('wraps around in repeat all mode', () => {
+      store.addTracks(['/a.mp3', '/b.mp3'])
+      store.currentIndex = 1
+      store.repeatMode = 'all'
+      const result = store.peekNextTrack()
+      expect(result.track.title).toBe('a')
+      expect(result.index).toBe(0)
+    })
+
+    it('returns current track in repeat one mode', () => {
+      store.addTracks(['/a.mp3', '/b.mp3'])
+      store.currentIndex = 0
+      store.repeatMode = 'one'
+      const result = store.peekNextTrack()
+      expect(result.track.title).toBe('a')
+      expect(result.index).toBe(0)
+    })
+  })
+
   describe('getNextTrack', () => {
     it('returns null for empty playlist', () => {
       expect(store.getNextTrack()).toBeNull()
