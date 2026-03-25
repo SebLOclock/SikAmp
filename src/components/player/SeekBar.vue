@@ -18,9 +18,9 @@ function draw() {
   if (!canvas) return
   const ctx = setupCanvas(canvas, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore.renderMode)
 
-  drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT)
+  drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore)
 
-  drawSlider(ctx, 8, 5, CANVAS_WIDTH - 16, 12, playerStore.currentTime, 0, playerStore.duration || 1)
+  drawSlider(ctx, 8, 5, CANVAS_WIDTH - 16, 12, playerStore.currentTime, 0, playerStore.duration || 1, skinStore)
 }
 
 function getTimeFromX(event) {
@@ -59,7 +59,7 @@ onUnmounted(() => {
 })
 
 watch(
-  () => [playerStore.currentTime, playerStore.duration, skinStore.renderMode],
+  () => [playerStore.currentTime, playerStore.duration, skinStore.renderMode, skinStore.skinVersion],
   () => { if (!isDragging) draw() }
 )
 </script>

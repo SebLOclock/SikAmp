@@ -75,7 +75,12 @@ async function handleFilesDropped(paths) {
   try {
     const { processDroppedPaths } = await import('@/utils/fileDropProcessor.js')
     const wasEmpty = playlistStore.isEmpty
-    const { directFiles, resolvedFiles } = await processDroppedPaths(paths)
+    const { directFiles, resolvedFiles, wszFiles } = await processDroppedPaths(paths)
+
+    // Handle .wsz skin files
+    if (wszFiles.length > 0) {
+      await handleWszDrop(wszFiles[0])
+    }
 
     // Add direct audio files first for instant feedback
     if (directFiles.length > 0) {
@@ -92,9 +97,44 @@ async function handleFilesDropped(paths) {
   }
 }
 
+async function handleWszDrop(wszPath) {
+  // Step 1: Parse and apply the skin
+  try {
+    await skinStore.loadSkinFromWsz(wszPath)
+  } catch (err) {
+    console.warn('[App] Failed to load skin:', err)
+    playerStore.showFeedback(`Skin invalide : ${wszPath.split('/').pop()}`, 'error')
+    skinStore.resetToDefaultSkin()
+    return
+  }
+
+  // Step 2: Copy to library and persist (skin already applied — don't reset on failure)
+  try {
+    const { invoke } = await import('@tauri-apps/api/core')
+    const libraryPath = await invoke('copy_skin_to_library', { wszPath })
+    preferencesStore.setSkinPath(libraryPath)
+    console.log('[App] Skin applied and saved to library:', libraryPath)
+  } catch (err) {
+    // Skin is applied but library copy failed — persist original path as fallback
+    console.warn('[App] Failed to copy skin to library:', err)
+    preferencesStore.setSkinPath(wszPath)
+  }
+}
+
 const renderModeClass = computed(() =>
   skinStore.renderMode === 'modern' ? 'render-modern' : 'render-retro'
 )
+
+const playerWindowStyle = computed(() => {
+  if (skinStore.mainBmpUrl) {
+    return {
+      backgroundImage: `url(${skinStore.mainBmpUrl})`,
+      backgroundSize: '100% 100%',
+      backgroundRepeat: 'no-repeat'
+    }
+  }
+  return {}
+})
 
 function handlePrev() {
   playlistStore.playPrevious()
@@ -112,6 +152,24 @@ onMounted(() => {
   preferencesStore.loadPreferences().then(async () => {
     // Apply saved render mode to skin store
     skinStore.setRenderMode(preferencesStore.renderMode)
+    // Load saved skin if any
+    if (preferencesStore.currentSkinPath) {
+      try {
+        const { invoke } = await import('@tauri-apps/api/core')
+        const result = await invoke('load_saved_skin', { wszPath: preferencesStore.currentSkinPath })
+        if (result) {
+          await skinStore.loadSkinFromWsz(preferencesStore.currentSkinPath)
+          console.log('[App] Restored saved skin:', preferencesStore.currentSkinPath)
+        } else {
+          // .wsz file no longer exists, fallback silently
+          console.log('[App] Saved skin not found, using default')
+          preferencesStore.setSkinPath(null)
+        }
+      } catch (err) {
+        console.warn('[App] Failed to restore saved skin:', err)
+        preferencesStore.setSkinPath(null)
+      }
+    }
     // Auto-detect scale factor if not already saved
     if (preferencesStore.scaleFactor === null) {
       const dpr = window.devicePixelRatio || 1
@@ -132,7 +190,7 @@ onUnmounted(() => {
 
 <template>
   <main class="app" :class="renderModeClass" :style="{ backgroundColor: skinStore.colors.background }">
-    <div class="player-window">
+    <div class="player-window" :style="playerWindowStyle">
       <PlayerDisplay />
       <SeekBar />
       <div class="controls-row">
@@ -196,4 +254,5 @@ onUnmounted(() => {
 .controls-row > :last-child {
   flex-shrink: 0;
 }
+
 </style>

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { setupCanvas, drawBackground, drawButton, drawSlider, drawBitmapText, drawScrollingText, measureText } from './skinRenderer'
+import { setupCanvas, drawSprite, drawBackground, drawButton, drawSlider, drawBitmapText, drawScrollingText, measureText } from './skinRenderer'
 
 // Mock canvas context
 function createMockContext() {
@@ -11,9 +11,12 @@ function createMockContext() {
     textAlign: '',
     textBaseline: '',
     imageSmoothingEnabled: true,
+    shadowColor: 'transparent',
+    shadowBlur: 0,
     fillRect: vi.fn(),
     strokeRect: vi.fn(),
     fillText: vi.fn(),
+    drawImage: vi.fn(),
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
@@ -73,11 +76,47 @@ describe('skinRenderer', () => {
     })
   })
 
+  describe('drawSprite', () => {
+    it('draws image region to canvas', () => {
+      const mockImg = { width: 100, height: 50 }
+      const result = drawSprite(ctx, mockImg, 0, 0, 50, 25, 10, 10, 50, 25)
+      expect(ctx.drawImage).toHaveBeenCalledWith(mockImg, 0, 0, 50, 25, 10, 10, 50, 25)
+      expect(result).toBe(true)
+    })
+
+    it('returns false when image is null', () => {
+      const result = drawSprite(ctx, null, 0, 0, 50, 25, 10, 10)
+      expect(ctx.drawImage).not.toHaveBeenCalled()
+      expect(result).toBe(false)
+    })
+
+    it('uses source dimensions as dest when dw/dh not provided', () => {
+      const mockImg = { width: 100, height: 50 }
+      drawSprite(ctx, mockImg, 0, 0, 50, 25, 10, 10)
+      expect(ctx.drawImage).toHaveBeenCalledWith(mockImg, 0, 0, 50, 25, 10, 10, 50, 25)
+    })
+  })
+
   describe('drawBackground', () => {
-    it('fills the canvas with background color', () => {
+    it('fills the canvas with background color (no skinStore)', () => {
       drawBackground(ctx, 800, 100)
       expect(ctx.fillStyle).toBe('#29292E')
       expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 800, 100)
+    })
+
+    it('uses skin colors when skinStore is provided', () => {
+      const mockSkinStore = { colors: { background: '#112233' }, isCustomSkin: false, mainBmpUrl: null }
+      drawBackground(ctx, 800, 100, mockSkinStore)
+      expect(ctx.fillStyle).toBe('#112233')
+      expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 800, 100)
+    })
+
+    it('clears canvas when custom skin has mainBmpUrl (CSS background shows through)', () => {
+      ctx.clearRect = vi.fn()
+      const mockSkinStore = { isCustomSkin: true, mainBmpUrl: 'asset://localhost/main.bmp' }
+      drawBackground(ctx, 800, 100, mockSkinStore)
+      expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 800, 100)
+      expect(ctx.fillRect).not.toHaveBeenCalled()
     })
   })
 
@@ -94,9 +133,7 @@ describe('skinRenderer', () => {
 
     it('draws a disabled button with disabled color', () => {
       drawButton(ctx, 10, 5, 46, 28, 'disabled')
-      // The face fillRect should have been called with the disabled color
       const fillCalls = ctx.fillRect.mock.calls
-      // First fillRect call is the face — check its preceding fillStyle
       expect(fillCalls.length).toBeGreaterThan(0)
     })
 

@@ -23,7 +23,8 @@ export const usePreferencesStore = defineStore('preferences', {
     crossfadeDuration: DEFAULT_CROSSFADE_DURATION,
     renderMode: 'retro',
     windowState: null,
-    scaleFactor: null
+    scaleFactor: null,
+    currentSkinPath: null
   }),
 
   actions: {
@@ -60,7 +61,11 @@ export const usePreferencesStore = defineStore('preferences', {
         if (typeof savedCrossfadeDuration === 'number' && savedCrossfadeDuration >= 1 && savedCrossfadeDuration <= MAX_CROSSFADE_DURATION) {
           this.crossfadeDuration = savedCrossfadeDuration
         }
-        console.log('[PreferencesStore] Loaded preferences — volume:', this.volume, 'jingle:', this.jingleEnabled, 'renderMode:', this.renderMode, 'crossfade:', this.crossfadeEnabled)
+        const savedSkinPath = await s.get('currentSkinPath')
+        if (typeof savedSkinPath === 'string' && savedSkinPath.length > 0) {
+          this.currentSkinPath = savedSkinPath
+        }
+        console.log('[PreferencesStore] Loaded preferences — volume:', this.volume, 'jingle:', this.jingleEnabled, 'renderMode:', this.renderMode, 'crossfade:', this.crossfadeEnabled, 'skin:', this.currentSkinPath)
       } catch (err) {
         console.warn('[PreferencesStore] Failed to load preferences:', err)
       }
@@ -98,6 +103,11 @@ export const usePreferencesStore = defineStore('preferences', {
       const clamped = Math.max(1, Math.min(MAX_CROSSFADE_DURATION, Math.round(seconds)))
       this.crossfadeDuration = clamped
       this._debouncedSave('crossfadeDuration', clamped)
+    },
+
+    setSkinPath(path) {
+      this.currentSkinPath = path || null
+      this._debouncedSave('currentSkinPath', this.currentSkinPath)
     },
 
     toggleJingle() {

@@ -14,7 +14,10 @@ pub fn run() {
             commands::file_commands::resolve_audio_paths,
             commands::audio_commands::get_audio_metadata,
             commands::playlist_commands::save_playlist,
-            commands::playlist_commands::load_playlist
+            commands::playlist_commands::load_playlist,
+            skin_parser::parse_skin,
+            skin_parser::copy_skin_to_library,
+            skin_parser::load_saved_skin
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

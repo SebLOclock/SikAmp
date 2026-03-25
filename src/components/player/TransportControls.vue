@@ -3,7 +3,7 @@ import { ref, onMounted, watch, computed } from 'vue'
 import { usePlayerStore } from '@/stores/usePlayerStore'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useSkinStore } from '@/stores/useSkinStore'
-import { setupCanvas, drawBackground, drawButton } from '@/engine/skinRenderer'
+import { setupCanvas, drawBackground, drawButton, CBUTTONS_REGIONS } from '@/engine/skinRenderer'
 
 const canvasRef = ref(null)
 const playerStore = usePlayerStore()
@@ -43,15 +43,19 @@ function draw() {
   if (!canvas) return
   const ctx = setupCanvas(canvas, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore.renderMode)
 
-  drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT)
+  drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore)
 
+  const cbuttonsImg = skinStore.getAsset('cbuttons')
   for (const btn of BUTTONS) {
     let state = 'normal'
     const btnDisabled = btn.id === 'prev' ? isPrevDisabled.value : isDisabled.value
     if (btnDisabled) state = 'disabled'
     else if (pressedButton.value === btn.id) state = 'pressed'
     else if (hoveredButton.value === btn.id) state = 'hover'
-    drawButton(ctx, btn.x, BTN_Y, BTN_W, BTN_H, state, btn.label)
+    const spriteConfig = cbuttonsImg && CBUTTONS_REGIONS[btn.id]
+      ? { image: cbuttonsImg, ...CBUTTONS_REGIONS[btn.id] }
+      : null
+    drawButton(ctx, btn.x, BTN_Y, BTN_W, BTN_H, state, btn.label, skinStore, spriteConfig)
   }
 }
 
@@ -132,7 +136,7 @@ function accessibleAction(btnId) {
 onMounted(() => draw())
 
 watch(
-  () => [playerStore.isPlaying, playerStore.isPaused, playerStore.currentTrack, skinStore.renderMode, playlistStore.canPlayPrevious, playlistStore.isEmpty],
+  () => [playerStore.isPlaying, playerStore.isPaused, playerStore.currentTrack, skinStore.renderMode, skinStore.skinVersion, playlistStore.canPlayPrevious, playlistStore.isEmpty],
   () => draw()
 )
 </script>
