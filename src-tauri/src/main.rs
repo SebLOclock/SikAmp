@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    winamp_sik_lib::run()
+    sikamp_lib::run()
 }

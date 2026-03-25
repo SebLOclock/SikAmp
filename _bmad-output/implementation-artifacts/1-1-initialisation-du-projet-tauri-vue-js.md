@@ -5,7 +5,7 @@ Status: done
 ## Story
 
 As a developpeur,
-I want initialiser le projet winamp-sik avec Tauri v2, Vue.js 3, Pinia et le tooling de qualite,
+I want initialiser le projet SikAmp avec Tauri v2, Vue.js 3, Pinia et le tooling de qualite,
 So that la base technique est prete pour construire toutes les features du player.
 
 ## Acceptance Criteria (BDD)
@@ -128,7 +128,7 @@ cargo create-tauri-app winamp-sik --template vue
 
 ### Configuration Tauri (`tauri.conf.json`)
 
-- Titre de la fenetre : "winamp-sik"
+- Titre de la fenetre : "SikAmp"
 - Taille par defaut : 800x600 (min 800x400)
 - La fenetre doit etre redimensionnable
 
@@ -269,9 +269,9 @@ Claude Opus 4.6
 - 3 modules Rust squelettes crees : commands, skin_parser, file_manager (declares dans lib.rs)
 - constants.js avec constantes initiales du projet
 - audioEngine.js et skinRenderer.js squelettes crees
-- tauri.conf.json configure : fenetre "winamp-sik" 800x600, min 800x400, redimensionnable
+- tauri.conf.json configure : fenetre "SikAmp" 800x600, min 800x400, redimensionnable
 - Scripts npm ajoutes : lint, lint:fix, format
-- App.vue simplifie pour winamp-sik
+- App.vue simplifie pour SikAmp
 
 ### Change Log
 

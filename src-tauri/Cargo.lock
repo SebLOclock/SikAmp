@@ -3372,6 +3372,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "sikamp"
+version = "0.1.0"
+dependencies = [
+ "lofty",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-opener",
+ "tauri-plugin-store",
+ "tempfile",
+ "tokio",
+ "walkdir",
+]
+
+[[package]]
 name = "simd-adler32"
 version = "0.3.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4692,22 +4708,6 @@ dependencies = [
  "thiserror 2.0.18",
  "windows",
  "windows-core 0.61.2",
-]
-
-[[package]]
-name = "winamp-sik"
-version = "0.1.0"
-dependencies = [
- "lofty",
- "serde",
- "serde_json",
- "tauri",
- "tauri-build",
- "tauri-plugin-opener",
- "tauri-plugin-store",
- "tempfile",
- "tokio",
- "walkdir",
 ]
 
 [[package]]

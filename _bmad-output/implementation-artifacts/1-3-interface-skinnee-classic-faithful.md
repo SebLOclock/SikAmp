@@ -67,7 +67,7 @@ So that je ressente immediatement la nostalgie du player original.
 - [x] Task 4 : Implementer TitleBar.vue (AC: #1, #2)
   - [x] 4.1 Creer `src/components/player/TitleBar.vue` — composant avec un `<canvas>` ref
   - [x] 4.2 Dessiner la barre de titre avec le sprite `titlebar.bmp`, fond gris metallique #29292E
-  - [x] 4.3 Afficher le nom de l'app "winamp-sik" ou le titre du morceau en cours (via `usePlayerStore`)
+  - [x] 4.3 Afficher le nom de l'app "SikAmp" ou le titre du morceau en cours (via `usePlayerStore`)
   - [x] 4.4 Ajouter les boutons minimize et close (sprites avec etats normal/hover/pressed)
   - [x] 4.5 Boutons minimize/close : ecouter les clics via hit-testing sur les coordonnees du canvas
   - [x] 4.6 Minimize appelle `appWindow.minimize()` et Close appelle `appWindow.close()` via `@tauri-apps/api/window`

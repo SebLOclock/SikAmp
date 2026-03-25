@@ -1,4 +1,4 @@
-# Winamp SIK
+# SikAmp
 
 > Lecteur audio desktop open-source qui recree l'experience Winamp classique avec des technologies modernes.
 
