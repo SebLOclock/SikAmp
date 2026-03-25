@@ -78,16 +78,63 @@ export const usePlaylistStore = defineStore('playlist', {
 
     removeTrack(index) {
       if (index < 0 || index >= this.tracks.length) return
+      const wasCurrentTrack = index === this.currentIndex
+      const playerStore = usePlayerStore()
+      const wasActive = playerStore.isPlaying || playerStore.isPaused
+
       this.tracks.splice(index, 1)
-      if (index < this.currentIndex) {
+
+      if (wasCurrentTrack) {
+        if (wasActive && this.tracks.length > 0) {
+          // Advance to next track (now at same index after splice)
+          const nextIndex = index < this.tracks.length ? index : this.tracks.length - 1
+          this.currentIndex = nextIndex
+          this.playTrack(nextIndex)
+        } else if (wasActive) {
+          // No tracks left, stop playback
+          playerStore.stop()
+          this.currentIndex = -1
+        } else {
+          this.currentIndex = -1
+        }
+      } else if (index < this.currentIndex) {
         this.currentIndex--
-      } else if (index === this.currentIndex) {
-        this.currentIndex = -1
       }
       console.log('[PlaylistStore] Track removed, total:', this.tracks.length)
     },
 
+    moveTrack(fromIndex, toIndex) {
+      if (fromIndex === toIndex) return
+      if (fromIndex < 0 || fromIndex >= this.tracks.length) return
+      if (toIndex < 0 || toIndex >= this.tracks.length) return
+
+      const [track] = this.tracks.splice(fromIndex, 1)
+      this.tracks.splice(toIndex, 0, track)
+
+      // Update currentIndex to follow the currently playing track
+      if (this.currentIndex === fromIndex) {
+        this.currentIndex = toIndex
+      } else if (fromIndex < this.currentIndex && toIndex >= this.currentIndex) {
+        this.currentIndex--
+      } else if (fromIndex > this.currentIndex && toIndex <= this.currentIndex) {
+        this.currentIndex++
+      }
+
+      console.log(`[PlaylistStore] Track moved from ${fromIndex} to ${toIndex}`)
+    },
+
+    newPlaylist() {
+      const playerStore = usePlayerStore()
+      playerStore.stop()
+      this.tracks = []
+      this.currentIndex = -1
+      this._consecutiveErrors = 0
+      console.log('[PlaylistStore] New playlist created')
+    },
+
     clearPlaylist() {
+      const playerStore = usePlayerStore()
+      playerStore.stop()
       this.tracks = []
       this.currentIndex = -1
       this._consecutiveErrors = 0
