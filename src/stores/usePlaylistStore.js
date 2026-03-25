@@ -343,7 +343,7 @@ export const usePlaylistStore = defineStore('playlist', {
       } catch (err) {
         console.warn('[PlaylistStore] Open files dialog error:', err)
         const playerStore = usePlayerStore()
-        playerStore.showFeedback('Erreur d\'ouverture de fichiers', 'error')
+        playerStore.showFeedback("Erreur d'ouverture de fichiers", 'error')
       }
     },
 
@@ -360,7 +360,7 @@ export const usePlaylistStore = defineStore('playlist', {
       } catch (err) {
         console.warn('[PlaylistStore] Open folder dialog error:', err)
         const playerStore = usePlayerStore()
-        playerStore.showFeedback('Erreur d\'ouverture du dossier', 'error')
+        playerStore.showFeedback("Erreur d'ouverture du dossier", 'error')
       }
     },
 
