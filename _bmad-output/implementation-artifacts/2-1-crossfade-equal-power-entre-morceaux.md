@@ -1,6 +1,6 @@
 # Story 2.1 : Crossfade Equal-Power entre Morceaux
 
-Status: review
+Status: done
 
 ## Story
 

@@ -3,6 +3,7 @@ import { ref, computed, watch, nextTick } from 'vue'
 import { useSkinStore } from '@/stores/useSkinStore'
 import { usePreferencesStore } from '@/stores/usePreferencesStore'
 import { useFocusTrap } from '@/composables/useFocusTrap'
+import { MIN_CROSSFADE_DURATION, MAX_CROSSFADE_DURATION } from '@/utils/constants'
 
 const skinStore = useSkinStore()
 const preferencesStore = usePreferencesStore()
@@ -33,6 +34,15 @@ function handleToggleJingle() {
 
 const isModernMode = computed(() => skinStore.renderMode === 'modern')
 
+function handleToggleCrossfade() {
+  preferencesStore.setCrossfadeEnabled(!preferencesStore.crossfadeEnabled)
+}
+
+function handleCrossfadeDurationChange(event) {
+  const seconds = Number(event.target.value)
+  preferencesStore.setCrossfadeDuration(seconds)
+}
+
 function handleToggleRenderMode() {
   const newMode = isModernMode.value ? 'retro' : 'modern'
   skinStore.setRenderMode(newMode)
@@ -62,6 +72,50 @@ function handleToggleRenderMode() {
         >×</button>
       </div>
       <div class="prefs-body">
+        <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
+          <span>Fondu enchaîné</span>
+          <button
+            role="switch"
+            :aria-checked="preferencesStore.crossfadeEnabled"
+            :aria-label="'Fondu enchaîné : ' + (preferencesStore.crossfadeEnabled ? 'activé' : 'désactivé')"
+            class="toggle-switch"
+            :class="{ active: preferencesStore.crossfadeEnabled }"
+            :style="{
+              backgroundColor: preferencesStore.crossfadeEnabled ? skinStore.colors.textPrimary : skinStore.colors.disabledControls,
+              borderColor: skinStore.colors.accentMetallic
+            }"
+            @click="handleToggleCrossfade"
+          >
+            <span class="toggle-knob" :style="{ backgroundColor: skinStore.colors.background }" />
+          </button>
+        </label>
+        <div
+          class="pref-row pref-slider-row"
+          :style="{ color: skinStore.colors.textSecondary, opacity: preferencesStore.crossfadeEnabled ? 1 : 0.4, cursor: preferencesStore.crossfadeEnabled ? 'default' : 'not-allowed' }"
+        >
+          <span>Durée du fondu</span>
+          <div class="slider-group">
+            <input
+              type="range"
+              :min="MIN_CROSSFADE_DURATION"
+              :max="MAX_CROSSFADE_DURATION"
+              step="1"
+              :value="preferencesStore.crossfadeDuration"
+              :disabled="!preferencesStore.crossfadeEnabled"
+              :aria-valuemin="MIN_CROSSFADE_DURATION"
+              :aria-valuemax="MAX_CROSSFADE_DURATION"
+              :aria-valuenow="preferencesStore.crossfadeDuration"
+              :aria-label="'Durée du fondu enchaîné : ' + preferencesStore.crossfadeDuration + ' secondes'"
+              class="crossfade-slider"
+              :style="{
+                '--slider-thumb-color': skinStore.colors.textPrimary,
+                '--slider-track-color': preferencesStore.crossfadeEnabled ? skinStore.colors.accentMetallic : skinStore.colors.disabledControls
+              }"
+              @input="handleCrossfadeDurationChange"
+            />
+            <span class="slider-value" :style="{ color: skinStore.colors.textPrimary }">{{ preferencesStore.crossfadeDuration }}s</span>
+          </div>
+        </div>
         <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
           <span>Jingle au lancement</span>
           <button
@@ -198,6 +252,69 @@ function handleToggleRenderMode() {
   font-size: 10px;
   font-weight: bold;
   letter-spacing: 0.5px;
+}
+
+.pref-slider-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  padding: 6px 0;
+  transition: opacity 0.15s;
+}
+
+.slider-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crossfade-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--slider-track-color);
+  outline: none;
+}
+
+.crossfade-slider:focus-visible {
+  outline: 2px solid var(--slider-thumb-color);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.crossfade-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--slider-thumb-color);
+  cursor: inherit;
+}
+
+.crossfade-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--slider-thumb-color);
+  border: none;
+  cursor: inherit;
+}
+
+.crossfade-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: var(--slider-track-color);
+}
+
+.slider-value {
+  font-size: 11px;
+  font-weight: bold;
+  min-width: 24px;
+  text-align: right;
 }
 
 /* Modern mode fade transition (150ms) */
