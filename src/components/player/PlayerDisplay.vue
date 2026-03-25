@@ -46,7 +46,7 @@ watch(
       scrollOffset = 0
       hadFeedback.value = false
     }
-  },
+  }
 )
 
 const displayTitle = computed(() => {
