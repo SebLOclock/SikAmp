@@ -293,18 +293,13 @@ function handleContextMenuClose() {
 function openContextMenuAtElement(el) {
   if (el) {
     const rect = el.getBoundingClientRect()
-<<<<<<< Updated upstream
     const targetIndex = el.id ? parseTrackIndex(el.id) : -1
-    contextMenu.value = { visible: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, targetIndex }
-=======
-    const targetIndex = el.id ? parseInt(el.id.replace('playlist-item-', '')) : -1
     contextMenu.value = {
       visible: true,
       x: rect.left + rect.width / 2,
       y: rect.top + rect.height / 2,
       targetIndex
     }
->>>>>>> Stashed changes
   } else {
     // No focused track — open at center of playlist
     const panelEl = document.querySelector('.playlist-panel')
