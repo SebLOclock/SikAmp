@@ -2,6 +2,7 @@
 export const APP_NAME = 'SikAmp'
 
 // Audio defaults
+export const MIN_CROSSFADE_DURATION = 1
 export const MAX_CROSSFADE_DURATION = 12
 export const DEFAULT_CROSSFADE_DURATION = 5
 export const DEFAULT_VOLUME = 0.8

@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-21
-last_updated: 2026-03-25T12:00:00
+last_updated: 2026-03-25
 project: SikAmp
 project_key: NOKEY
 tracking_system: file-system
@@ -57,8 +57,8 @@ development_status:
 
   # Epic 2 : Crossfade — La Feature Signature
   epic-2: in-progress
-  2-1-crossfade-equal-power-entre-morceaux: review
-  2-2-configuration-de-la-duree-du-crossfade: backlog
+  2-1-crossfade-equal-power-entre-morceaux: done
+  2-2-configuration-de-la-duree-du-crossfade: review
   epic-2-retrospective: optional
 
   # Epic 3 : Gestion des Playlists
