@@ -35,7 +35,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-21
-last_updated: 2026-03-25
+last_updated: 2026-03-25T00:00:00
 project: SikAmp
 project_key: NOKEY
 tracking_system: file-system
@@ -43,7 +43,7 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1 : Premier Lancement & Lecture Audio
-  epic-1: in-progress
+  epic-1: done
   1-1-initialisation-du-projet-tauri-vue-js: done
   1-2-moteur-audio-et-lecture-de-base: done
   1-3-interface-skinnee-classic-faithful: done
@@ -56,14 +56,14 @@ development_status:
   epic-1-retrospective: done
 
   # Epic 2 : Crossfade — La Feature Signature
-  epic-2: in-progress
+  epic-2: done
   2-1-crossfade-equal-power-entre-morceaux: done
-  2-2-configuration-de-la-duree-du-crossfade: review
-  epic-2-retrospective: optional
+  2-2-configuration-de-la-duree-du-crossfade: done
+  epic-2-retrospective: done
 
   # Epic 3 : Gestion des Playlists
-  epic-3: backlog
-  3-1-creer-et-editer-des-playlists: backlog
+  epic-3: in-progress
+  3-1-creer-et-editer-des-playlists: review
   3-2-sauvegarder-et-charger-des-playlists: backlog
   3-3-menu-contextuel-playlist: backlog
   epic-3-retrospective: optional

@@ -1,6 +1,6 @@
 # Story 2.2 : Configuration de la Durée du Crossfade
 
-Status: review
+Status: done
 
 ## Story
 
