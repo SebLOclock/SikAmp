@@ -26,6 +26,7 @@ lofty = "0.22"
 tauri-plugin-store = "2"
 tokio = { version = "1", features = ["rt"] }
 tauri-plugin-dialog = "2"
+tauri-plugin-updater = "2"
 walkdir = "2"
 zip = "2"
 
