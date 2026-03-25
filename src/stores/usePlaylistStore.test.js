@@ -604,4 +604,77 @@ describe('usePlaylistStore', () => {
       expect(mockPlayerStore.showFeedback).toHaveBeenCalledWith('Erreur de chargement', 'error')
     })
   })
+
+  describe('openFiles', () => {
+    it('adds selected files to the playlist', async () => {
+      vi.doMock('@tauri-apps/plugin-dialog', () => ({
+        open: vi.fn().mockResolvedValue(['/music/song1.mp3', '/music/song2.flac'])
+      }))
+
+      mockInvoke.mockRejectedValue(new Error('not in Tauri'))
+
+      await store.openFiles()
+
+      expect(store.tracks).toHaveLength(2)
+      expect(store.tracks[0].path).toBe('/music/song1.mp3')
+      expect(store.tracks[1].path).toBe('/music/song2.flac')
+    })
+
+    it('does nothing when user cancels dialog', async () => {
+      vi.doMock('@tauri-apps/plugin-dialog', () => ({
+        open: vi.fn().mockResolvedValue(null)
+      }))
+
+      await store.openFiles()
+
+      expect(store.tracks).toHaveLength(0)
+    })
+
+    it('handles dialog errors gracefully', async () => {
+      vi.doMock('@tauri-apps/plugin-dialog', () => ({
+        open: vi.fn().mockRejectedValue(new Error('dialog error'))
+      }))
+
+      await store.openFiles()
+
+      expect(store.tracks).toHaveLength(0)
+    })
+  })
+
+  describe('openFolder', () => {
+    it('scans folder and adds resolved audio files', async () => {
+      vi.doMock('@tauri-apps/plugin-dialog', () => ({
+        open: vi.fn().mockResolvedValue('/music/albums')
+      }))
+
+      mockInvoke.mockResolvedValueOnce(['/music/albums/track1.mp3', '/music/albums/track2.ogg'])
+
+      await store.openFolder()
+
+      expect(mockInvoke).toHaveBeenCalledWith('resolve_audio_paths', { paths: ['/music/albums'] })
+      expect(store.tracks).toHaveLength(2)
+    })
+
+    it('does nothing when user cancels directory dialog', async () => {
+      vi.doMock('@tauri-apps/plugin-dialog', () => ({
+        open: vi.fn().mockResolvedValue(null)
+      }))
+
+      await store.openFolder()
+
+      expect(store.tracks).toHaveLength(0)
+    })
+
+    it('handles resolve errors gracefully', async () => {
+      vi.doMock('@tauri-apps/plugin-dialog', () => ({
+        open: vi.fn().mockResolvedValue('/music/albums')
+      }))
+
+      mockInvoke.mockRejectedValueOnce(new Error('resolve error'))
+
+      await store.openFolder()
+
+      expect(store.tracks).toHaveLength(0)
+    })
+  })
 })

@@ -313,6 +313,37 @@ export const usePlaylistStore = defineStore('playlist', {
       }
     },
 
+    async openFiles() {
+      try {
+        const { open } = await import('@tauri-apps/plugin-dialog')
+        const paths = await open({
+          filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'flac'] }],
+          multiple: true
+        })
+        if (paths && paths.length > 0) {
+          this.addTracks(paths)
+          console.log(`[PlaylistStore] Opened ${paths.length} files via dialog`)
+        }
+      } catch (err) {
+        console.warn('[PlaylistStore] Open files dialog error:', err)
+      }
+    },
+
+    async openFolder() {
+      try {
+        const { open } = await import('@tauri-apps/plugin-dialog')
+        const dir = await open({ directory: true })
+        if (!dir) return
+        const files = await invoke('resolve_audio_paths', { paths: [dir] })
+        if (files.length > 0) {
+          this.addTracks(files)
+          console.log(`[PlaylistStore] Opened folder: ${files.length} files from ${dir}`)
+        }
+      } catch (err) {
+        console.warn('[PlaylistStore] Open folder dialog error:', err)
+      }
+    },
+
     async loadPlaylist() {
       const playerStore = usePlayerStore()
 

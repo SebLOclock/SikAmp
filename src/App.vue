@@ -40,7 +40,7 @@ registerShortcutCallbacks({
   onToggleShuffle: () => { actionBarRef.value?.executeAction('shuffle'); actionBarRef.value?.draw?.() },
   onToggleRepeat: () => { actionBarRef.value?.executeAction('repeat'); actionBarRef.value?.draw?.() },
   onToggleCrossfade: () => { actionBarRef.value?.executeAction('crossfade'); actionBarRef.value?.draw?.() },
-  onOpenFile: () => { console.log('[App] Ctrl+O: open file (stub)') },
+  onOpenFile: () => { playlistStore.openFiles() },
   onSavePlaylist: () => { playlistStore.savePlaylist() },
   onLoadPlaylist: () => { playlistStore.loadPlaylist() },
   onNewPlaylist: () => { playlistStore.newPlaylist() }

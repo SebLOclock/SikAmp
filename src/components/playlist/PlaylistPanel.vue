@@ -2,6 +2,7 @@
 import { ref, watch, computed, onBeforeUnmount } from 'vue'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useSkinStore } from '@/stores/useSkinStore'
+import ContextMenu from '@/components/shared/ContextMenu.vue'
 
 defineProps({
   isDragging: {
@@ -14,6 +15,7 @@ const playlistStore = usePlaylistStore()
 const skinStore = useSkinStore()
 
 const focusedIndex = ref(-1)
+const contextMenu = ref({ visible: false, x: 0, y: 0, targetIndex: -1 })
 const dragFromIndex = ref(-1)
 const dropTargetIndex = ref(-1)
 let mouseDownY = 0
@@ -86,6 +88,16 @@ function handleKeyDown(event) {
       ariaAnnouncement.value = `Morceau déplacé en position ${focusedIndex.value + 1}`
     }
     scrollToFocused()
+    return
+  }
+
+  // Shift+F10 or ContextMenu key: open context menu
+  if ((key === 'F10' && event.shiftKey) || key === 'ContextMenu') {
+    event.preventDefault()
+    const focusedEl = focusedIndex.value >= 0
+      ? document.getElementById(`playlist-item-${focusedIndex.value}`)
+      : null
+    openContextMenuAtElement(focusedEl)
     return
   }
 
@@ -200,6 +212,76 @@ onBeforeUnmount(() => {
   document.removeEventListener('mouseup', handleGlobalMouseUp)
 })
 
+// Context menu
+const contextMenuItems = computed(() => [
+  { label: 'Ouvrir fichier', action: 'open-file' },
+  { label: 'Ouvrir dossier', action: 'open-folder' },
+  { label: 'separator' },
+  { label: 'Nouvelle playlist', action: 'new-playlist' },
+  { label: 'Sauvegarder playlist', action: 'save-playlist' },
+  { label: 'Charger playlist', action: 'load-playlist' },
+  { label: 'separator' },
+  { label: 'Retirer le morceau', action: 'remove-track', disabled: contextMenu.value.targetIndex < 0 },
+  { label: 'Retirer tout', action: 'remove-all', disabled: playlistStore.isEmpty }
+])
+
+function handleContextMenu(event) {
+  event.preventDefault()
+  const trackEl = event.target.closest('.playlist-track')
+  const targetIndex = trackEl ? parseInt(trackEl.id.replace('playlist-item-', '')) : -1
+  contextMenu.value = { visible: true, x: event.clientX, y: event.clientY, targetIndex }
+  ariaAnnouncement.value = 'Menu contextuel ouvert'
+}
+
+function handleContextMenuSelect(action) {
+  switch (action) {
+    case 'open-file':
+      playlistStore.openFiles()
+      break
+    case 'open-folder':
+      playlistStore.openFolder()
+      break
+    case 'new-playlist':
+      playlistStore.newPlaylist()
+      break
+    case 'save-playlist':
+      playlistStore.savePlaylist()
+      break
+    case 'load-playlist':
+      playlistStore.loadPlaylist()
+      break
+    case 'remove-track':
+      if (contextMenu.value.targetIndex >= 0) {
+        playlistStore.removeTrack(contextMenu.value.targetIndex)
+      }
+      break
+    case 'remove-all':
+      playlistStore.clearPlaylist()
+      break
+  }
+}
+
+function handleContextMenuClose() {
+  contextMenu.value = { ...contextMenu.value, visible: false }
+  ariaAnnouncement.value = 'Menu contextuel fermé'
+}
+
+function openContextMenuAtElement(el) {
+  if (el) {
+    const rect = el.getBoundingClientRect()
+    const targetIndex = el.id ? parseInt(el.id.replace('playlist-item-', '')) : -1
+    contextMenu.value = { visible: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, targetIndex }
+  } else {
+    // No focused track — open at center of playlist
+    const panelEl = document.querySelector('.playlist-panel')
+    if (panelEl) {
+      const rect = panelEl.getBoundingClientRect()
+      contextMenu.value = { visible: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, targetIndex: -1 }
+    }
+  }
+  ariaAnnouncement.value = 'Menu contextuel ouvert'
+}
+
 function trackAriaLabel(track, index) {
   const num = index + 1
   if (track.missing) {
@@ -227,6 +309,7 @@ function trackAriaLabel(track, index) {
     }"
     @keydown="handleKeyDown"
     @focus="handleFocus"
+    @contextmenu.prevent="handleContextMenu"
   >
     <!-- Drag overlay -->
     <div
@@ -293,6 +376,16 @@ function trackAriaLabel(track, index) {
     <div v-if="!playlistStore.isEmpty" class="playlist-status">
       {{ playlistStore.trackCount }} morceau{{ playlistStore.trackCount > 1 ? 'x' : '' }}
     </div>
+
+    <!-- Context menu -->
+    <ContextMenu
+      :visible="contextMenu.visible"
+      :x="contextMenu.x"
+      :y="contextMenu.y"
+      :items="contextMenuItems"
+      @select="handleContextMenuSelect"
+      @close="handleContextMenuClose"
+    />
 
     <!-- ARIA live region for announcements -->
     <div aria-live="polite" class="sr-only" role="status">{{ ariaAnnouncement }}</div>
