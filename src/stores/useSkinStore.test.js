@@ -100,7 +100,9 @@ describe('useSkinStore', () => {
 
       // Mock Image loading (happy-dom doesn't fully support Image)
       global.Image = class {
-        set src(_) { setTimeout(() => this.onload(), 0) }
+        set src(_) {
+          setTimeout(() => this.onload(), 0)
+        }
       }
 
       await store.loadSkinFromWsz('/path/to/test.wsz')
@@ -144,7 +146,10 @@ describe('useSkinStore', () => {
       const warnSpy = vi.spyOn(console, 'warn')
       store.setRenderMode('invalid')
       expect(store.renderMode).toBe('retro')
-      expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid render mode'), 'invalid')
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Invalid render mode'),
+        'invalid'
+      )
       warnSpy.mockRestore()
     })
   })

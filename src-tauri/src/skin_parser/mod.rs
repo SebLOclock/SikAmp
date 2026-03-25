@@ -128,8 +128,8 @@ pub fn parse_skin(wsz_path: String) -> Result<SkinParseResult, SkinError> {
         let mut outfile =
             fs::File::create(&output_path).map_err(|e| SkinError::IoError(e.to_string()))?;
 
-        let written =
-            std::io::copy(&mut entry, &mut outfile).map_err(|e| SkinError::IoError(e.to_string()))?;
+        let written = std::io::copy(&mut entry, &mut outfile)
+            .map_err(|e| SkinError::IoError(e.to_string()))?;
 
         // Runtime size guard in case pre-check was bypassed (data descriptors)
         extracted_size += written;
@@ -392,11 +392,7 @@ mod tests {
     #[test]
     fn test_load_saved_skin_valid() {
         let tmp = tempfile::tempdir().unwrap();
-        let wsz = create_test_wsz(
-            tmp.path(),
-            "saved.wsz",
-            &[("main.bmp", b"data")],
-        );
+        let wsz = create_test_wsz(tmp.path(), "saved.wsz", &[("main.bmp", b"data")]);
 
         let result = load_saved_skin(wsz.to_string_lossy().to_string()).unwrap();
         assert!(result.is_some());

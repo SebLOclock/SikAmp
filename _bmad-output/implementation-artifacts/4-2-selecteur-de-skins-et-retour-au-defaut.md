@@ -1,6 +1,6 @@
 # Story 4.2 : Sélecteur de Skins et Retour au Défaut
 
-Status: review
+Status: done
 
 ## Story
 

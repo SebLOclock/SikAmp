@@ -109,22 +109,18 @@ function draw() {
   // Title zone: feedback message or scrolling title
   if (playerStore.feedbackMessage) {
     // Static feedback message in semantic color (no scroll)
-    drawBitmapText(
-      ctx,
-      displayTitle.value,
-      12, 10,
-      TITLE_FONT_SIZE, null,
-      displayTitleColor.value
-    )
+    drawBitmapText(ctx, displayTitle.value, 12, 10, TITLE_FONT_SIZE, null, displayTitleColor.value)
   } else {
     // Normal scrolling title
     drawScrollingText(
       ctx,
       scrollingTitle.value,
-      12, 10,
+      12,
+      10,
       canvasWidth - 24,
       scrollOffset,
-      TITLE_FONT_SIZE, null,
+      TITLE_FONT_SIZE,
+      null,
       skinStore.colors.textPrimary
     )
   }
@@ -134,9 +130,33 @@ function draw() {
 
   // Bitrate, frequency, stereo info
   const infoY = 82
-  drawBitmapText(ctx, bitrateInfo.value, 20, infoY, INFO_FONT_SIZE, null, skinStore.colors.textSecondary)
-  drawBitmapText(ctx, frequencyInfo.value, 140, infoY, INFO_FONT_SIZE, null, skinStore.colors.textSecondary)
-  drawBitmapText(ctx, stereoMode.value, 260, infoY, INFO_FONT_SIZE, null, skinStore.colors.textSecondary)
+  drawBitmapText(
+    ctx,
+    bitrateInfo.value,
+    20,
+    infoY,
+    INFO_FONT_SIZE,
+    null,
+    skinStore.colors.textSecondary
+  )
+  drawBitmapText(
+    ctx,
+    frequencyInfo.value,
+    140,
+    infoY,
+    INFO_FONT_SIZE,
+    null,
+    skinStore.colors.textSecondary
+  )
+  drawBitmapText(
+    ctx,
+    stereoMode.value,
+    260,
+    infoY,
+    INFO_FONT_SIZE,
+    null,
+    skinStore.colors.textSecondary
+  )
 }
 
 function animateScroll() {
@@ -160,8 +180,12 @@ function handleCanvasClick(event) {
   const x = (event.clientX - rect.left) * (canvasWidth / rect.width)
   const y = (event.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
 
-  if (x >= TIME_ZONE.x && x <= TIME_ZONE.x + TIME_ZONE.w &&
-      y >= TIME_ZONE.y && y <= TIME_ZONE.y + TIME_ZONE.h) {
+  if (
+    x >= TIME_ZONE.x &&
+    x <= TIME_ZONE.x + TIME_ZONE.w &&
+    y >= TIME_ZONE.y &&
+    y <= TIME_ZONE.y + TIME_ZONE.h
+  ) {
     showRemaining.value = !showRemaining.value
     draw()
   }
@@ -193,11 +217,7 @@ onUnmounted(() => {
 
 <template>
   <div ref="containerRef" class="canvas-wrapper">
-    <canvas
-      ref="canvasRef"
-      class="display-canvas"
-      @click="handleCanvasClick"
-    />
+    <canvas ref="canvasRef" class="display-canvas" @click="handleCanvasClick" />
     <!-- Accessible live region for screen readers — title changes -->
     <div class="sr-only" aria-live="polite" role="status">
       {{ scrollingTitle }}

@@ -53,8 +53,7 @@ export function useWindowState() {
         const my = m.position.y
         const mw = m.size.width / m.scaleFactor
         const mh = m.size.height / m.scaleFactor
-        return state.x + 100 > mx && state.x < mx + mw &&
-               state.y + 50 > my && state.y < my + mh
+        return state.x + 100 > mx && state.x < mx + mw && state.y + 50 > my && state.y < my + mh
       })
 
       await win.setSize(new LogicalSize(state.width, state.height))

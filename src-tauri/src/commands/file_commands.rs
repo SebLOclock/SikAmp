@@ -128,9 +128,9 @@ mod tests {
         create_test_tree(dir.path());
         let paths = vec![
             dir.path().join("song.mp3").to_string_lossy().into_owned(),
-            dir.path().join("sub").to_string_lossy().into_owned(),       // directory
+            dir.path().join("sub").to_string_lossy().into_owned(), // directory
             dir.path().join("readme.txt").to_string_lossy().into_owned(), // ignored
-            dir.path().join("LICENSE").to_string_lossy().into_owned(),    // extensionless file — does not exist but won't crash
+            dir.path().join("LICENSE").to_string_lossy().into_owned(), // extensionless file — does not exist but won't crash
         ];
         let result = resolve_audio_paths(paths).unwrap();
         assert!(result.iter().any(|f| f.ends_with("song.mp3")));

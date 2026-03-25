@@ -68,11 +68,13 @@ export const usePlayerStore = defineStore('player', {
     stop() {
       // Restore playlist index if crossfade was in progress
       if (audioEngine.isCrossfading && preCrossfadeIndex >= 0) {
-        import('./usePlaylistStore').then(({ usePlaylistStore }) => {
-          const playlistStore = usePlaylistStore()
-          playlistStore.currentIndex = preCrossfadeIndex
-          preCrossfadeIndex = -1
-        }).catch(() => {})
+        import('./usePlaylistStore')
+          .then(({ usePlaylistStore }) => {
+            const playlistStore = usePlaylistStore()
+            playlistStore.currentIndex = preCrossfadeIndex
+            preCrossfadeIndex = -1
+          })
+          .catch(() => {})
       }
       audioEngine.stop()
       this.isPlaying = false
@@ -169,7 +171,10 @@ export const usePlayerStore = defineStore('player', {
 
         // Clamp crossfade duration to remaining track time
         const timeRemaining = this.duration - audioEngine.currentTime
-        const effectiveDuration = Math.min(preferencesStore.crossfadeDuration, Math.max(0.5, timeRemaining))
+        const effectiveDuration = Math.min(
+          preferencesStore.crossfadeDuration,
+          Math.max(0.5, timeRemaining)
+        )
         const durationMs = effectiveDuration * 1000
         try {
           preCrossfadeIndex = playlistStore.currentIndex
@@ -203,7 +208,10 @@ export const usePlayerStore = defineStore('player', {
         await audioEngine.preloadOnInactive(next.track.path)
         // Clamp crossfade duration to remaining track time
         const timeRemaining = this.duration - audioEngine.currentTime
-        const effectiveDuration = Math.min(preferencesStore.crossfadeDuration, Math.max(0.5, timeRemaining))
+        const effectiveDuration = Math.min(
+          preferencesStore.crossfadeDuration,
+          Math.max(0.5, timeRemaining)
+        )
         const durationMs = effectiveDuration * 1000
         preCrossfadeIndex = playlistStore.currentIndex
         await audioEngine.startCrossfade(durationMs)
@@ -245,11 +253,13 @@ export const usePlayerStore = defineStore('player', {
         crossfadeTriggered = false
 
         // Auto-advance to next track
-        import('./usePlaylistStore').then(async ({ usePlaylistStore }) => {
-          const playlistStore = usePlaylistStore()
-          playlistStore._consecutiveErrors = 0
-          await playlistStore.playNext()
-        }).catch(err => console.error('[PlayerStore] Failed to auto-advance:', err))
+        import('./usePlaylistStore')
+          .then(async ({ usePlaylistStore }) => {
+            const playlistStore = usePlaylistStore()
+            playlistStore._consecutiveErrors = 0
+            await playlistStore.playNext()
+          })
+          .catch((err) => console.error('[PlayerStore] Failed to auto-advance:', err))
       }
 
       audioEngine.onLoadedMetadata = ({ duration, trackInfo }) => {
@@ -257,10 +267,12 @@ export const usePlayerStore = defineStore('player', {
         this.currentTrack = trackInfo
         this.clearFeedback()
         // Reset consecutive errors on confirmed successful load
-        import('./usePlaylistStore').then(({ usePlaylistStore }) => {
-          const playlistStore = usePlaylistStore()
-          playlistStore._consecutiveErrors = 0
-        }).catch(() => {})
+        import('./usePlaylistStore')
+          .then(({ usePlaylistStore }) => {
+            const playlistStore = usePlaylistStore()
+            playlistStore._consecutiveErrors = 0
+          })
+          .catch(() => {})
       }
 
       audioEngine.onError = (error) => {
@@ -276,10 +288,14 @@ export const usePlayerStore = defineStore('player', {
           this.showFeedback(`Impossible de lire : ${fileName}`, 'error')
         }
         // Auto-skip: lazy import to avoid circular dependency
-        import('./usePlaylistStore').then(({ usePlaylistStore }) => {
-          const playlistStore = usePlaylistStore()
-          playlistStore._handlePlaybackError()
-        }).catch(err => console.error('[PlayerStore] Failed to load playlistStore for error handling:', err))
+        import('./usePlaylistStore')
+          .then(({ usePlaylistStore }) => {
+            const playlistStore = usePlaylistStore()
+            playlistStore._handlePlaybackError()
+          })
+          .catch((err) =>
+            console.error('[PlayerStore] Failed to load playlistStore for error handling:', err)
+          )
       }
 
       audioEngine.onCrossfadeComplete = () => {
@@ -294,14 +310,18 @@ export const usePlayerStore = defineStore('player', {
         }
         if (audioEngine.currentTrackInfo) {
           // Reload track info from playlist for enriched metadata
-          import('./usePlaylistStore').then(({ usePlaylistStore }) => {
-            const playlistStore = usePlaylistStore()
-            const currentTrack = playlistStore.currentTrack
-            if (currentTrack) {
-              this.currentTrack = currentTrack
-              audioEngine.currentTrackInfo = currentTrack
-            }
-          }).catch(err => console.warn('[PlayerStore] Failed to update track metadata after crossfade:', err))
+          import('./usePlaylistStore')
+            .then(({ usePlaylistStore }) => {
+              const playlistStore = usePlaylistStore()
+              const currentTrack = playlistStore.currentTrack
+              if (currentTrack) {
+                this.currentTrack = currentTrack
+                audioEngine.currentTrackInfo = currentTrack
+              }
+            })
+            .catch((err) =>
+              console.warn('[PlayerStore] Failed to update track metadata after crossfade:', err)
+            )
         }
         this.isPlaying = true
         this.isPaused = false

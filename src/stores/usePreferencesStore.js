@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
 import { load } from '@tauri-apps/plugin-store'
-import { DEFAULT_VOLUME, DEFAULT_CROSSFADE_DURATION, MAX_CROSSFADE_DURATION } from '@/utils/constants.js'
+import {
+  DEFAULT_VOLUME,
+  DEFAULT_CROSSFADE_DURATION,
+  MAX_CROSSFADE_DURATION
+} from '@/utils/constants.js'
 
 const STORE_FILE = 'preferences.json'
 const DEBOUNCE_MS = 500
@@ -44,9 +48,14 @@ export const usePreferencesStore = defineStore('preferences', {
           this.renderMode = savedRenderMode
         }
         const savedWindowState = await s.get('windowState')
-        if (savedWindowState && typeof savedWindowState === 'object' &&
-            typeof savedWindowState.width === 'number' && typeof savedWindowState.height === 'number' &&
-            typeof savedWindowState.x === 'number' && typeof savedWindowState.y === 'number') {
+        if (
+          savedWindowState &&
+          typeof savedWindowState === 'object' &&
+          typeof savedWindowState.width === 'number' &&
+          typeof savedWindowState.height === 'number' &&
+          typeof savedWindowState.x === 'number' &&
+          typeof savedWindowState.y === 'number'
+        ) {
           this.windowState = savedWindowState
         }
         const savedScaleFactor = await s.get('scaleFactor')
@@ -58,14 +67,29 @@ export const usePreferencesStore = defineStore('preferences', {
           this.crossfadeEnabled = savedCrossfadeEnabled
         }
         const savedCrossfadeDuration = await s.get('crossfadeDuration')
-        if (typeof savedCrossfadeDuration === 'number' && savedCrossfadeDuration >= 1 && savedCrossfadeDuration <= MAX_CROSSFADE_DURATION) {
+        if (
+          typeof savedCrossfadeDuration === 'number' &&
+          savedCrossfadeDuration >= 1 &&
+          savedCrossfadeDuration <= MAX_CROSSFADE_DURATION
+        ) {
           this.crossfadeDuration = savedCrossfadeDuration
         }
         const savedSkinPath = await s.get('currentSkinPath')
         if (typeof savedSkinPath === 'string' && savedSkinPath.length > 0) {
           this.currentSkinPath = savedSkinPath
         }
-        console.log('[PreferencesStore] Loaded preferences — volume:', this.volume, 'jingle:', this.jingleEnabled, 'renderMode:', this.renderMode, 'crossfade:', this.crossfadeEnabled, 'skin:', this.currentSkinPath)
+        console.log(
+          '[PreferencesStore] Loaded preferences — volume:',
+          this.volume,
+          'jingle:',
+          this.jingleEnabled,
+          'renderMode:',
+          this.renderMode,
+          'crossfade:',
+          this.crossfadeEnabled,
+          'skin:',
+          this.currentSkinPath
+        )
       } catch (err) {
         console.warn('[PreferencesStore] Failed to load preferences:', err)
       }

@@ -38,12 +38,24 @@ vi.mock('@/engine/audioEngine.js', () => ({
     currentTime: 0,
     isCrossfading: false,
     _audioElement: { currentTime: 0 },
-    set onTimeUpdate(cb) { this._onTimeUpdate = cb },
-    set onEnded(cb) { this._onEnded = cb },
-    set onLoadedMetadata(cb) { this._onLoadedMetadata = cb },
-    set onError(cb) { this._onError = cb },
-    set onCrossfadeStart(cb) { this._onCrossfadeStart = cb },
-    set onCrossfadeComplete(cb) { this._onCrossfadeComplete = cb },
+    set onTimeUpdate(cb) {
+      this._onTimeUpdate = cb
+    },
+    set onEnded(cb) {
+      this._onEnded = cb
+    },
+    set onLoadedMetadata(cb) {
+      this._onLoadedMetadata = cb
+    },
+    set onError(cb) {
+      this._onError = cb
+    },
+    set onCrossfadeStart(cb) {
+      this._onCrossfadeStart = cb
+    },
+    set onCrossfadeComplete(cb) {
+      this._onCrossfadeComplete = cb
+    },
     _onTimeUpdate: null,
     _onEnded: null,
     _onLoadedMetadata: null,

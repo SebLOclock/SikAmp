@@ -82,7 +82,10 @@ describe('fileDropProcessor', () => {
     it('combines direct files and resolved files in allFiles', async () => {
       mockInvoke.mockResolvedValue(['/music/dir/c.wav'])
 
-      const { directFiles, resolvedFiles, allFiles } = await processDroppedPaths(['/music/song.mp3', '/music/dir'])
+      const { directFiles, resolvedFiles, allFiles } = await processDroppedPaths([
+        '/music/song.mp3',
+        '/music/dir'
+      ])
       expect(directFiles).toEqual(['/music/song.mp3'])
       expect(resolvedFiles).toEqual(['/music/dir/c.wav'])
       expect(allFiles).toEqual(['/music/song.mp3', '/music/dir/c.wav'])

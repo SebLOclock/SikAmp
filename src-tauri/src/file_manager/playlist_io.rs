@@ -43,8 +43,7 @@ pub fn write_m3u8(path: &str, tracks: &[TrackInfo]) -> Result<(), String> {
         };
         writeln!(file, "#EXTINF:{},{}", duration, display)
             .map_err(|e| format!("Write error: {}", e))?;
-        writeln!(file, "{}", track.path)
-            .map_err(|e| format!("Write error: {}", e))?;
+        writeln!(file, "{}", track.path).map_err(|e| format!("Write error: {}", e))?;
     }
 
     Ok(())
@@ -59,9 +58,7 @@ pub fn read_m3u(path: &str) -> Result<Vec<PlaylistEntry>, String> {
     let reader = BufReader::new(file);
 
     // Resolve relative paths against the playlist file's parent directory
-    let playlist_dir = Path::new(path)
-        .parent()
-        .unwrap_or_else(|| Path::new("."));
+    let playlist_dir = Path::new(path).parent().unwrap_or_else(|| Path::new("."));
 
     let mut entries = Vec::new();
     let mut pending_extinf: Option<(u64, String)> = None;
@@ -356,7 +353,10 @@ mod tests {
 
         let entries = read_m3u(&playlist_path.to_string_lossy()).unwrap();
         assert_eq!(entries.len(), 1);
-        assert!(entries[0].exists, "Relative path should resolve against playlist directory");
+        assert!(
+            entries[0].exists,
+            "Relative path should resolve against playlist directory"
+        );
         assert!(entries[0].path.contains("music/song.mp3"));
     }
 

@@ -190,8 +190,8 @@ L'utilisateur charge des skins .wsz communautaires et personnalise l'apparence d
 **FRs couverts :** FR17, FR18
 
 ### Epic 5 : Distribution, Installation & Mises a Jour
-L'utilisateur installe l'app sur son OS et recoit les mises a jour automatiquement. Le mainteneur publie des releases multi-plateforme.
-**FRs couverts :** FR25, FR26, FR27, FR28, FR38, FR39, FR40
+L'utilisateur installe l'app sur son OS. Le mainteneur publie des releases multi-plateforme via CI/CD. _(Scope révisé : signature retirée, Story 5.3 reportée)_
+**FRs couverts :** FR25, FR38, FR40 _(FR26-28 et FR39 reportés avec Story 5.3)_
 
 ### Epic 6 : Landing Page
 Le visiteur decouvre SikAmp via une page web attractive et telecharge l'installeur pour son OS.
@@ -833,13 +833,15 @@ So that je puisse explorer et choisir l'apparence qui me plait.
 
 ## Epic 5 : Distribution, Installation & Mises a Jour
 
-L'utilisateur installe l'app sur son OS et recoit les mises a jour automatiquement. Le mainteneur publie des releases multi-plateforme signees.
+L'utilisateur installe l'app sur son OS. Le mainteneur publie des releases multi-plateforme via CI/CD.
+
+> **Scope révisé (rétro Epic 4, 2026-03-25) :** Signature de code retirée (pas de licence Apple Developer / Authenticode pour un side project solo). Story 5.3 (Auto-Update Signé) reportée — dépend de la signature.
 
 ### Story 5.1 : Pipeline CI/CD Multi-Plateforme
 
 As a mainteneur,
 I want un pipeline automatise qui build SikAmp pour Windows, macOS et Linux,
-So that chaque release produise des installeurs signes pour les 3 plateformes.
+So that chaque release produise des installeurs pour les 3 plateformes.
 
 **Acceptance Criteria:**
 
@@ -858,8 +860,8 @@ So that chaque release produise des installeurs signes pour les 3 plateformes.
 
 **Given** le build termine sur les 3 plateformes
 **When** les artefacts sont generes
-**Then** Windows produit un installeur .exe signe avec Authenticode
-**And** macOS produit un .dmg signe avec Apple Developer Program
+**Then** Windows produit un installeur .exe (non signe)
+**And** macOS produit un .dmg (non signe)
 **And** Linux produit un AppImage et un .deb
 **And** chaque installeur pese moins de 100 Mo (NFR14)
 
@@ -892,18 +894,15 @@ So that les utilisateurs puissent telecharger la derniere version de SikAmp.
 **Then** l'installation se complete en moins de 2 minutes (NFR15)
 **And** l'application se lance correctement apres installation
 
-**Given** la release publiee
-**When** l'utilisateur verifie la signature de l'installeur
-**Then** l'installeur Windows est signe Authenticode (pas d'alerte SmartScreen)
-**And** l'installeur macOS est signe et notarise (pas d'alerte Gatekeeper)
+### Story 5.3 : Auto-Update Signe [REPORTÉE]
 
-### Story 5.3 : Auto-Update Signe
+> **Reportée (rétro Epic 4, 2026-03-25) :** Dépend de la signature de code (licence Apple Developer / Authenticode). Sera réintroduite si le projet justifie l'investissement.
 
-As a utilisateur,
+~~As a utilisateur,
 I want recevoir les mises a jour automatiquement sans interrompre mon ecoute,
-So that j'aie toujours la derniere version sans effort.
+So that j'aie toujours la derniere version sans effort.~~
 
-**Acceptance Criteria:**
+<details><summary>Acceptance Criteria (gelés)</summary>
 
 **Given** l'application lancee avec une connexion internet disponible
 **When** le systeme verifie les mises a jour au demarrage
@@ -939,6 +938,8 @@ So that j'aie toujours la derniere version sans effort.
 **Given** le systeme d'auto-update
 **When** des donnees sont transmises au serveur
 **Then** aucune donnee utilisateur n'est envoyee — seule la version actuelle est communiquee pour la comparaison (NFR7)
+
+</details>
 
 ## Epic 6 : Landing Page
 

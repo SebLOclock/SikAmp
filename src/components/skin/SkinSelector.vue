@@ -26,7 +26,9 @@ const skins = ref([])
 const focusedIndex = ref(-1)
 
 const isModernMode = computed(() => skinStore.renderMode === 'modern')
-const activeSkinId = computed(() => focusedIndex.value >= 0 ? `skin-option-${focusedIndex.value}` : undefined)
+const activeSkinId = computed(() =>
+  focusedIndex.value >= 0 ? `skin-option-${focusedIndex.value}` : undefined
+)
 
 const DEFAULT_SKIN_ENTRY = { name: 'Classic Faithful', path: null }
 
@@ -82,18 +84,22 @@ function handleKeydown(event) {
   }
 }
 
-watch(() => props.visible, async (v) => {
-  if (v) {
-    await loadSkinList()
-    // Set focused index to the active skin
-    const activeIdx = allSkins.value.findIndex(s => isActiveSkin(s))
-    focusedIndex.value = activeIdx >= 0 ? activeIdx : 0
-    await nextTick()
-    if (overlayRef.value) activateTrap(overlayRef.value)
-  } else {
-    deactivateTrap()
-  }
-}, { immediate: true })
+watch(
+  () => props.visible,
+  async (v) => {
+    if (v) {
+      await loadSkinList()
+      // Set focused index to the active skin
+      const activeIdx = allSkins.value.findIndex((s) => isActiveSkin(s))
+      focusedIndex.value = activeIdx >= 0 ? activeIdx : 0
+      await nextTick()
+      if (overlayRef.value) activateTrap(overlayRef.value)
+    } else {
+      deactivateTrap()
+    }
+  },
+  { immediate: true }
+)
 
 onUnmounted(() => deactivateTrap())
 
@@ -107,58 +113,68 @@ watch(focusedIndex, async () => {
 
 <template>
   <Transition :name="isModernMode ? 'overlay-fade' : ''">
-  <div
-    v-if="visible"
-    ref="overlayRef"
-    class="skin-overlay overlay-panel"
-    tabindex="-1"
-    aria-label="Sélecteur de skins"
-    :style="{ backgroundColor: skinStore.colors.displayBg + 'EE' }"
-    @click.self="emit('close')"
-    @keydown.escape="emit('close')"
-  >
-    <div class="skin-panel" :style="{ backgroundColor: skinStore.colors.background, borderColor: skinStore.colors.accentMetallic }">
-      <div class="skin-header" :style="{ borderBottomColor: skinStore.colors.accentMetallic }">
-        <span class="skin-title" :style="{ color: skinStore.colors.textPrimary }">SKINS</span>
-        <button
-          class="skin-close"
-          :style="{ color: skinStore.colors.textPrimary }"
-          aria-label="Fermer le sélecteur de skins"
-          @click="emit('close')"
-        >×</button>
-      </div>
-      <div class="skin-body">
-        <ul
-          ref="listRef"
-          role="listbox"
-          aria-label="Sélecteur de skins"
-          :aria-activedescendant="activeSkinId"
-          class="skin-list"
-          @keydown="handleKeydown"
-        >
-          <li
-            v-for="(skin, index) in allSkins"
-            :id="'skin-option-' + index"
-            :key="skin.path ?? 'default'"
-            role="option"
-            :aria-selected="isActiveSkin(skin)"
-            :data-focused="focusedIndex === index"
-            :tabindex="focusedIndex === index ? 0 : -1"
-            class="skin-item"
-            :class="{ active: isActiveSkin(skin), focused: focusedIndex === index }"
-            :style="{
-              color: skinStore.colors.textSecondary,
-              backgroundColor: isActiveSkin(skin) ? skinStore.colors.accentMetallic + '44' : 'transparent',
-              outlineColor: focusedIndex === index ? skinStore.colors.textPrimary : 'transparent'
-            }"
-            @click="selectSkin(skin)"
+    <div
+      v-if="visible"
+      ref="overlayRef"
+      class="skin-overlay overlay-panel"
+      tabindex="-1"
+      aria-label="Sélecteur de skins"
+      :style="{ backgroundColor: skinStore.colors.displayBg + 'EE' }"
+      @click.self="emit('close')"
+      @keydown.escape="emit('close')"
+    >
+      <div
+        class="skin-panel"
+        :style="{
+          backgroundColor: skinStore.colors.background,
+          borderColor: skinStore.colors.accentMetallic
+        }"
+      >
+        <div class="skin-header" :style="{ borderBottomColor: skinStore.colors.accentMetallic }">
+          <span class="skin-title" :style="{ color: skinStore.colors.textPrimary }">SKINS</span>
+          <button
+            class="skin-close"
+            :style="{ color: skinStore.colors.textPrimary }"
+            aria-label="Fermer le sélecteur de skins"
+            @click="emit('close')"
           >
-            {{ skin.name }}
-          </li>
-        </ul>
+            ×
+          </button>
+        </div>
+        <div class="skin-body">
+          <ul
+            ref="listRef"
+            role="listbox"
+            aria-label="Sélecteur de skins"
+            :aria-activedescendant="activeSkinId"
+            class="skin-list"
+            @keydown="handleKeydown"
+          >
+            <li
+              v-for="(skin, index) in allSkins"
+              :id="'skin-option-' + index"
+              :key="skin.path ?? 'default'"
+              role="option"
+              :aria-selected="isActiveSkin(skin)"
+              :data-focused="focusedIndex === index"
+              :tabindex="focusedIndex === index ? 0 : -1"
+              class="skin-item"
+              :class="{ active: isActiveSkin(skin), focused: focusedIndex === index }"
+              :style="{
+                color: skinStore.colors.textSecondary,
+                backgroundColor: isActiveSkin(skin)
+                  ? skinStore.colors.accentMetallic + '44'
+                  : 'transparent',
+                outlineColor: focusedIndex === index ? skinStore.colors.textPrimary : 'transparent'
+              }"
+              @click="selectSkin(skin)"
+            >
+              {{ skin.name }}
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
-  </div>
   </Transition>
 </template>
 

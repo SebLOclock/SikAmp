@@ -10,7 +10,7 @@ import { SKIN_COLORS } from '@/stores/useSkinStore.js'
  * while CSS keeps it at the logical size.
  */
 export function setupCanvas(canvas, width, height, renderMode) {
-  const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1
+  const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1
   canvas.width = width * dpr
   canvas.height = height * dpr
   canvas.style.width = width + 'px'
@@ -27,7 +27,17 @@ export function setupCanvas(canvas, width, height, renderMode) {
  */
 export function drawSprite(ctx, image, sx, sy, sw, sh, dx, dy, dw, dh) {
   if (!image || sw <= 0 || sh <= 0) return false
-  ctx.drawImage(image, sx, sy, sw, sh, dx, dy, dw !== undefined ? dw : sw, dh !== undefined ? dh : sh)
+  ctx.drawImage(
+    image,
+    sx,
+    sy,
+    sw,
+    sh,
+    dx,
+    dy,
+    dw !== undefined ? dw : sw,
+    dh !== undefined ? dh : sh
+  )
   return true
 }
 
@@ -52,11 +62,11 @@ export function drawBackground(ctx, width, height, skinStore) {
  * Each button: 23×18 pixels. Top row = normal, bottom row = pressed.
  */
 export const CBUTTONS_REGIONS = {
-  prev:  { normal: { sx: 0,  sy: 0, sw: 23, sh: 18 }, pressed: { sx: 0,  sy: 18, sw: 23, sh: 18 } },
-  play:  { normal: { sx: 23, sy: 0, sw: 23, sh: 18 }, pressed: { sx: 23, sy: 18, sw: 23, sh: 18 } },
+  prev: { normal: { sx: 0, sy: 0, sw: 23, sh: 18 }, pressed: { sx: 0, sy: 18, sw: 23, sh: 18 } },
+  play: { normal: { sx: 23, sy: 0, sw: 23, sh: 18 }, pressed: { sx: 23, sy: 18, sw: 23, sh: 18 } },
   pause: { normal: { sx: 46, sy: 0, sw: 23, sh: 18 }, pressed: { sx: 46, sy: 18, sw: 23, sh: 18 } },
-  stop:  { normal: { sx: 69, sy: 0, sw: 23, sh: 18 }, pressed: { sx: 69, sy: 18, sw: 23, sh: 18 } },
-  next:  { normal: { sx: 92, sy: 0, sw: 23, sh: 18 }, pressed: { sx: 92, sy: 18, sw: 23, sh: 18 } }
+  stop: { normal: { sx: 69, sy: 0, sw: 23, sh: 18 }, pressed: { sx: 69, sy: 18, sw: 23, sh: 18 } },
+  next: { normal: { sx: 92, sy: 0, sw: 23, sh: 18 }, pressed: { sx: 92, sy: 18, sw: 23, sh: 18 } }
 }
 
 /**
@@ -67,8 +77,12 @@ export const CBUTTONS_REGIONS = {
 export function drawButton(ctx, x, y, w, h, state = 'normal', label = '', skinStore, spriteConfig) {
   // Sprite rendering path
   if (spriteConfig && spriteConfig.image) {
-    const region = state === 'pressed' && spriteConfig.pressed ? spriteConfig.pressed : spriteConfig.normal
-    if (region && drawSprite(ctx, spriteConfig.image, region.sx, region.sy, region.sw, region.sh, x, y, w, h)) {
+    const region =
+      state === 'pressed' && spriteConfig.pressed ? spriteConfig.pressed : spriteConfig.normal
+    if (
+      region &&
+      drawSprite(ctx, spriteConfig.image, region.sx, region.sy, region.sw, region.sh, x, y, w, h)
+    ) {
       return
     }
   }
@@ -88,8 +102,8 @@ export function drawButton(ctx, x, y, w, h, state = 'normal', label = '', skinSt
 
   // Beveled edges (2px for more visible 3D at modern resolution)
   ctx.fillStyle = lightEdge
-  ctx.fillRect(x, y, w, 2)       // top
-  ctx.fillRect(x, y, 2, h)       // left
+  ctx.fillRect(x, y, w, 2) // top
+  ctx.fillRect(x, y, 2, h) // left
 
   ctx.fillStyle = darkEdge
   ctx.fillRect(x, y + h - 2, w, 2) // bottom
@@ -158,7 +172,16 @@ export function drawSlider(ctx, x, y, width, height, value, min, max, skinStore)
  * Draw text in the classic Winamp monospace style.
  * Uses proper font rendering (not char-by-char) for crisp output.
  */
-export function drawBitmapText(ctx, text, x, y, fontSize = 12, _legacy = undefined, color = SKIN_COLORS.textPrimary) { // eslint-disable-line no-unused-vars
+export function drawBitmapText(
+  ctx,
+  text,
+  x,
+  y,
+  fontSize = 12,
+  _legacy = undefined,
+  color = SKIN_COLORS.textPrimary
+) {
+  // eslint-disable-line no-unused-vars
   ctx.fillStyle = color
   ctx.font = `bold ${fontSize}px "Courier New", "Consolas", monospace`
   ctx.textBaseline = 'top'
@@ -187,7 +210,18 @@ export function measureText(ctx, text, fontSize = 12) {
 /**
  * Draw scrolling text with horizontal offset, clipped to a region.
  */
-export function drawScrollingText(ctx, text, x, y, width, offset, fontSize = 12, _legacy = undefined, color = SKIN_COLORS.textPrimary) { // eslint-disable-line no-unused-vars
+export function drawScrollingText(
+  ctx,
+  text,
+  x,
+  y,
+  width,
+  offset,
+  fontSize = 12,
+  _legacy = undefined,
+  color = SKIN_COLORS.textPrimary
+) {
+  // eslint-disable-line no-unused-vars
   ctx.save()
   ctx.beginPath()
   ctx.rect(x, y, width, fontSize + 4)

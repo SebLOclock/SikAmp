@@ -35,7 +35,9 @@ fn read_metadata(path: &str) -> Result<AudioMetadata, String> {
     let sample_rate = properties.sample_rate();
     let channels = properties.channels();
 
-    let tag = tagged_file.primary_tag().or_else(|| tagged_file.first_tag());
+    let tag = tagged_file
+        .primary_tag()
+        .or_else(|| tagged_file.first_tag());
 
     let (title, artist, album) = if let Some(tag) = tag {
         (

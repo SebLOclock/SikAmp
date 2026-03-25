@@ -28,10 +28,18 @@ vi.mock('@/engine/audioEngine.js', () => ({
     currentTrackInfo: null,
     currentTime: 0,
     _audioElement: { addEventListener: vi.fn(), currentTime: 0 },
-    set onTimeUpdate(cb) { this._onTimeUpdate = cb },
-    set onEnded(cb) { this._onEnded = cb },
-    set onLoadedMetadata(cb) { this._onLoadedMetadata = cb },
-    set onError(cb) { this._onError = cb },
+    set onTimeUpdate(cb) {
+      this._onTimeUpdate = cb
+    },
+    set onEnded(cb) {
+      this._onEnded = cb
+    },
+    set onLoadedMetadata(cb) {
+      this._onLoadedMetadata = cb
+    },
+    set onError(cb) {
+      this._onError = cb
+    },
     _onTimeUpdate: null,
     _onEnded: null,
     _onLoadedMetadata: null,
@@ -167,7 +175,10 @@ describe('Error Handling Integration', () => {
       expect(playerStore.isPlaying).toBe(true)
 
       // Simulate onLoadedMetadata firing (the real success signal)
-      audioEngine._onLoadedMetadata({ duration: 180, trackInfo: { path: '/music/good.mp3', title: 'good' } })
+      audioEngine._onLoadedMetadata({
+        duration: 180,
+        trackInfo: { path: '/music/good.mp3', title: 'good' }
+      })
 
       // Wait for dynamic import in onLoadedMetadata to resolve
       await vi.advanceTimersByTimeAsync(0)
@@ -198,7 +209,10 @@ describe('Error Handling Integration', () => {
       await playlistStore.playTrack(0)
 
       // Simulate successful load
-      audioEngine._onLoadedMetadata({ duration: 180, trackInfo: { path: '/music/good.mp3', title: 'good' } })
+      audioEngine._onLoadedMetadata({
+        duration: 180,
+        trackInfo: { path: '/music/good.mp3', title: 'good' }
+      })
 
       expect(playerStore.feedbackMessage).toBeNull()
     })

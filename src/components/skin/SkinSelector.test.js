@@ -100,7 +100,7 @@ describe('SkinSelector (Story 4.2)', () => {
       })
     })
 
-    it('appelle list_skins via IPC Tauri à l\'ouverture', async () => {
+    it("appelle list_skins via IPC Tauri à l'ouverture", async () => {
       mountSelector()
       await vi.waitFor(() => {
         expect(mockInvoke).toHaveBeenCalledWith('list_skins')
@@ -251,7 +251,7 @@ describe('SkinSelector (Story 4.2)', () => {
       await wrapper.vm.$nextTick()
       const items = wrapper.findAll('.skin-item')
       // Focus should move to the next item
-      expect(items.some(item => item.classes().includes('focused'))).toBe(true)
+      expect(items.some((item) => item.classes().includes('focused'))).toBe(true)
     })
 
     it('navigation au clavier : Enter applique le skin sélectionné', async () => {
@@ -280,7 +280,7 @@ describe('SkinSelector (Story 4.2)', () => {
       })
     })
 
-    it('l\'overlay utilise displayBg + transparence', async () => {
+    it("l'overlay utilise displayBg + transparence", async () => {
       const wrapper = mountSelector()
       await vi.waitFor(() => {
         const overlay = wrapper.find('.skin-overlay')

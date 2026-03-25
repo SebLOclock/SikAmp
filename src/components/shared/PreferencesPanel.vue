@@ -19,14 +19,17 @@ const props = defineProps({
 
 const emit = defineEmits(['close'])
 
-watch(() => props.visible, async (v) => {
-  if (v) {
-    await nextTick()
-    activateTrap(overlayRef.value)
-  } else {
-    deactivateTrap()
+watch(
+  () => props.visible,
+  async (v) => {
+    if (v) {
+      await nextTick()
+      activateTrap(overlayRef.value)
+    } else {
+      deactivateTrap()
+    }
   }
-})
+)
 
 function handleToggleJingle() {
   preferencesStore.toggleJingle()
@@ -52,111 +55,160 @@ function handleToggleRenderMode() {
 
 <template>
   <Transition :name="isModernMode ? 'overlay-fade' : ''">
-  <div
-    v-if="visible"
-    ref="overlayRef"
-    class="prefs-overlay overlay-panel"
-    tabindex="-1"
-    :style="{ backgroundColor: skinStore.colors.displayBg + 'EE' }"
-    @click.self="emit('close')"
-    @keydown.escape="emit('close')"
-  >
-    <div class="prefs-panel" :style="{ backgroundColor: skinStore.colors.background, borderColor: skinStore.colors.accentMetallic }">
-      <div class="prefs-header" :style="{ borderBottomColor: skinStore.colors.accentMetallic }">
-        <span class="prefs-title" :style="{ color: skinStore.colors.textPrimary }">PREFERENCES</span>
-        <button
-          class="prefs-close"
-          :style="{ color: skinStore.colors.textPrimary }"
-          aria-label="Fermer les préférences"
-          @click="emit('close')"
-        >×</button>
-      </div>
-      <div class="prefs-body">
-        <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
-          <span>Fondu enchaîné</span>
-          <button
-            role="switch"
-            :aria-checked="preferencesStore.crossfadeEnabled"
-            :aria-label="'Fondu enchaîné : ' + (preferencesStore.crossfadeEnabled ? 'activé' : 'désactivé')"
-            class="toggle-switch"
-            :class="{ active: preferencesStore.crossfadeEnabled }"
-            :style="{
-              backgroundColor: preferencesStore.crossfadeEnabled ? skinStore.colors.textPrimary : skinStore.colors.disabledControls,
-              borderColor: skinStore.colors.accentMetallic
-            }"
-            @click="handleToggleCrossfade"
+    <div
+      v-if="visible"
+      ref="overlayRef"
+      class="prefs-overlay overlay-panel"
+      tabindex="-1"
+      :style="{ backgroundColor: skinStore.colors.displayBg + 'EE' }"
+      @click.self="emit('close')"
+      @keydown.escape="emit('close')"
+    >
+      <div
+        class="prefs-panel"
+        :style="{
+          backgroundColor: skinStore.colors.background,
+          borderColor: skinStore.colors.accentMetallic
+        }"
+      >
+        <div class="prefs-header" :style="{ borderBottomColor: skinStore.colors.accentMetallic }">
+          <span class="prefs-title" :style="{ color: skinStore.colors.textPrimary }"
+            >PREFERENCES</span
           >
-            <span class="toggle-knob" :style="{ backgroundColor: skinStore.colors.background }" />
+          <button
+            class="prefs-close"
+            :style="{ color: skinStore.colors.textPrimary }"
+            aria-label="Fermer les préférences"
+            @click="emit('close')"
+          >
+            ×
           </button>
-        </label>
-        <div
-          class="pref-row pref-slider-row"
-          :style="{ color: skinStore.colors.textSecondary, opacity: preferencesStore.crossfadeEnabled ? 1 : 0.4, cursor: preferencesStore.crossfadeEnabled ? 'default' : 'not-allowed' }"
-        >
-          <span>Durée du fondu</span>
-          <div class="slider-group">
-            <input
-              type="range"
-              :min="MIN_CROSSFADE_DURATION"
-              :max="MAX_CROSSFADE_DURATION"
-              step="1"
-              :value="preferencesStore.crossfadeDuration"
-              :disabled="!preferencesStore.crossfadeEnabled"
-              :aria-valuemin="MIN_CROSSFADE_DURATION"
-              :aria-valuemax="MAX_CROSSFADE_DURATION"
-              :aria-valuenow="preferencesStore.crossfadeDuration"
-              :aria-label="'Durée du fondu enchaîné : ' + preferencesStore.crossfadeDuration + ' secondes'"
-              class="crossfade-slider"
-              :style="{
-                '--slider-thumb-color': skinStore.colors.textPrimary,
-                '--slider-track-color': preferencesStore.crossfadeEnabled ? skinStore.colors.accentMetallic : skinStore.colors.disabledControls
-              }"
-              @input="handleCrossfadeDurationChange"
-            />
-            <span class="slider-value" :style="{ color: skinStore.colors.textPrimary }">{{ preferencesStore.crossfadeDuration }}s</span>
-          </div>
         </div>
-        <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
-          <span>Jingle au lancement</span>
-          <button
-            role="switch"
-            :aria-checked="preferencesStore.jingleEnabled"
-            :aria-label="'Jingle au lancement : ' + (preferencesStore.jingleEnabled ? 'activé' : 'désactivé')"
-            class="toggle-switch"
-            :class="{ active: preferencesStore.jingleEnabled }"
-            :style="{
-              backgroundColor: preferencesStore.jingleEnabled ? skinStore.colors.textPrimary : skinStore.colors.disabledControls,
-              borderColor: skinStore.colors.accentMetallic
-            }"
-            @click="handleToggleJingle"
-          >
-            <span class="toggle-knob" :style="{ backgroundColor: skinStore.colors.background }" />
-          </button>
-        </label>
-        <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
-          <span>Mode de rendu</span>
-          <div class="render-mode-toggle">
-            <span class="render-mode-label" :style="{ color: !isModernMode ? skinStore.colors.textPrimary : skinStore.colors.disabledControls }">Rétro</span>
+        <div class="prefs-body">
+          <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
+            <span>Fondu enchaîné</span>
             <button
               role="switch"
-              :aria-checked="isModernMode"
-              :aria-label="'Mode de rendu : ' + (isModernMode ? 'Moderne' : 'Rétro')"
+              :aria-checked="preferencesStore.crossfadeEnabled"
+              :aria-label="
+                'Fondu enchaîné : ' + (preferencesStore.crossfadeEnabled ? 'activé' : 'désactivé')
+              "
               class="toggle-switch"
-              :class="{ active: isModernMode }"
+              :class="{ active: preferencesStore.crossfadeEnabled }"
               :style="{
-                backgroundColor: isModernMode ? skinStore.colors.textPrimary : skinStore.colors.disabledControls,
+                backgroundColor: preferencesStore.crossfadeEnabled
+                  ? skinStore.colors.textPrimary
+                  : skinStore.colors.disabledControls,
                 borderColor: skinStore.colors.accentMetallic
               }"
-              @click="handleToggleRenderMode"
+              @click="handleToggleCrossfade"
             >
               <span class="toggle-knob" :style="{ backgroundColor: skinStore.colors.background }" />
             </button>
-            <span class="render-mode-label" :style="{ color: isModernMode ? skinStore.colors.textPrimary : skinStore.colors.disabledControls }">Moderne</span>
+          </label>
+          <div
+            class="pref-row pref-slider-row"
+            :style="{
+              color: skinStore.colors.textSecondary,
+              opacity: preferencesStore.crossfadeEnabled ? 1 : 0.4,
+              cursor: preferencesStore.crossfadeEnabled ? 'default' : 'not-allowed'
+            }"
+          >
+            <span>Durée du fondu</span>
+            <div class="slider-group">
+              <input
+                type="range"
+                :min="MIN_CROSSFADE_DURATION"
+                :max="MAX_CROSSFADE_DURATION"
+                step="1"
+                :value="preferencesStore.crossfadeDuration"
+                :disabled="!preferencesStore.crossfadeEnabled"
+                :aria-valuemin="MIN_CROSSFADE_DURATION"
+                :aria-valuemax="MAX_CROSSFADE_DURATION"
+                :aria-valuenow="preferencesStore.crossfadeDuration"
+                :aria-label="
+                  'Durée du fondu enchaîné : ' + preferencesStore.crossfadeDuration + ' secondes'
+                "
+                class="crossfade-slider"
+                :style="{
+                  '--slider-thumb-color': skinStore.colors.textPrimary,
+                  '--slider-track-color': preferencesStore.crossfadeEnabled
+                    ? skinStore.colors.accentMetallic
+                    : skinStore.colors.disabledControls
+                }"
+                @input="handleCrossfadeDurationChange"
+              />
+              <span class="slider-value" :style="{ color: skinStore.colors.textPrimary }"
+                >{{ preferencesStore.crossfadeDuration }}s</span
+              >
+            </div>
           </div>
-        </label>
+          <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
+            <span>Jingle au lancement</span>
+            <button
+              role="switch"
+              :aria-checked="preferencesStore.jingleEnabled"
+              :aria-label="
+                'Jingle au lancement : ' + (preferencesStore.jingleEnabled ? 'activé' : 'désactivé')
+              "
+              class="toggle-switch"
+              :class="{ active: preferencesStore.jingleEnabled }"
+              :style="{
+                backgroundColor: preferencesStore.jingleEnabled
+                  ? skinStore.colors.textPrimary
+                  : skinStore.colors.disabledControls,
+                borderColor: skinStore.colors.accentMetallic
+              }"
+              @click="handleToggleJingle"
+            >
+              <span class="toggle-knob" :style="{ backgroundColor: skinStore.colors.background }" />
+            </button>
+          </label>
+          <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
+            <span>Mode de rendu</span>
+            <div class="render-mode-toggle">
+              <span
+                class="render-mode-label"
+                :style="{
+                  color: !isModernMode
+                    ? skinStore.colors.textPrimary
+                    : skinStore.colors.disabledControls
+                }"
+                >Rétro</span
+              >
+              <button
+                role="switch"
+                :aria-checked="isModernMode"
+                :aria-label="'Mode de rendu : ' + (isModernMode ? 'Moderne' : 'Rétro')"
+                class="toggle-switch"
+                :class="{ active: isModernMode }"
+                :style="{
+                  backgroundColor: isModernMode
+                    ? skinStore.colors.textPrimary
+                    : skinStore.colors.disabledControls,
+                  borderColor: skinStore.colors.accentMetallic
+                }"
+                @click="handleToggleRenderMode"
+              >
+                <span
+                  class="toggle-knob"
+                  :style="{ backgroundColor: skinStore.colors.background }"
+                />
+              </button>
+              <span
+                class="render-mode-label"
+                :style="{
+                  color: isModernMode
+                    ? skinStore.colors.textPrimary
+                    : skinStore.colors.disabledControls
+                }"
+                >Moderne</span
+              >
+            </div>
+          </label>
+        </div>
       </div>
     </div>
-  </div>
   </Transition>
 </template>
 

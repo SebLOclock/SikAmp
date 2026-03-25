@@ -52,9 +52,10 @@ function draw() {
     if (btnDisabled) state = 'disabled'
     else if (pressedButton.value === btn.id) state = 'pressed'
     else if (hoveredButton.value === btn.id) state = 'hover'
-    const spriteConfig = cbuttonsImg && CBUTTONS_REGIONS[btn.id]
-      ? { image: cbuttonsImg, ...CBUTTONS_REGIONS[btn.id] }
-      : null
+    const spriteConfig =
+      cbuttonsImg && CBUTTONS_REGIONS[btn.id]
+        ? { image: cbuttonsImg, ...CBUTTONS_REGIONS[btn.id] }
+        : null
     drawButton(ctx, btn.x, BTN_Y, BTN_W, BTN_H, state, btn.label, skinStore, spriteConfig)
   }
 }
@@ -136,7 +137,15 @@ function accessibleAction(btnId) {
 onMounted(() => draw())
 
 watch(
-  () => [playerStore.isPlaying, playerStore.isPaused, playerStore.currentTrack, skinStore.renderMode, skinStore.skinVersion, playlistStore.canPlayPrevious, playlistStore.isEmpty],
+  () => [
+    playerStore.isPlaying,
+    playerStore.isPaused,
+    playerStore.currentTrack,
+    skinStore.renderMode,
+    skinStore.skinVersion,
+    playlistStore.canPlayPrevious,
+    playlistStore.isEmpty
+  ],
   () => draw()
 )
 </script>
@@ -152,11 +161,41 @@ watch(
       @mouseleave="handleMouseLeave"
     />
     <!-- Accessible hidden buttons -->
-    <button class="sr-only-btn" aria-label="Morceau précédent" :disabled="isPrevDisabled" :aria-disabled="isPrevDisabled" @click="accessibleAction('prev')" />
-    <button class="sr-only-btn" aria-label="Lecture" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('play')" />
-    <button class="sr-only-btn" aria-label="Pause" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('pause')" />
-    <button class="sr-only-btn" aria-label="Arrêt" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('stop')" />
-    <button class="sr-only-btn" aria-label="Morceau suivant" :disabled="isDisabled" :aria-disabled="isDisabled" @click="accessibleAction('next')" />
+    <button
+      class="sr-only-btn"
+      aria-label="Morceau précédent"
+      :disabled="isPrevDisabled"
+      :aria-disabled="isPrevDisabled"
+      @click="accessibleAction('prev')"
+    />
+    <button
+      class="sr-only-btn"
+      aria-label="Lecture"
+      :disabled="isDisabled"
+      :aria-disabled="isDisabled"
+      @click="accessibleAction('play')"
+    />
+    <button
+      class="sr-only-btn"
+      aria-label="Pause"
+      :disabled="isDisabled"
+      :aria-disabled="isDisabled"
+      @click="accessibleAction('pause')"
+    />
+    <button
+      class="sr-only-btn"
+      aria-label="Arrêt"
+      :disabled="isDisabled"
+      :aria-disabled="isDisabled"
+      @click="accessibleAction('stop')"
+    />
+    <button
+      class="sr-only-btn"
+      aria-label="Morceau suivant"
+      :disabled="isDisabled"
+      :aria-disabled="isDisabled"
+      @click="accessibleAction('next')"
+    />
   </div>
 </template>
 

@@ -72,14 +72,14 @@ describe('ContextMenu (Story 3.3)', () => {
     it('marks disabled items with aria-disabled', () => {
       const wrapper = mountMenu()
       const items = wrapper.findAll('[role="menuitem"]')
-      const disabledItem = items.find(i => i.text() === 'Retirer le morceau')
+      const disabledItem = items.find((i) => i.text() === 'Retirer le morceau')
       expect(disabledItem.attributes('aria-disabled')).toBe('true')
     })
 
     it('has aria-label on each menuitem', () => {
       const wrapper = mountMenu()
       const items = wrapper.findAll('[role="menuitem"]')
-      items.forEach(item => {
+      items.forEach((item) => {
         expect(item.attributes('aria-label')).toBeTruthy()
       })
     })
@@ -107,7 +107,7 @@ describe('ContextMenu (Story 3.3)', () => {
     it('does not emit select when disabled item is clicked', async () => {
       const wrapper = mountMenu()
       const items = wrapper.findAll('[role="menuitem"]')
-      const disabledItem = items.find(i => i.text() === 'Retirer le morceau')
+      const disabledItem = items.find((i) => i.text() === 'Retirer le morceau')
       await disabledItem.trigger('click')
       expect(wrapper.emitted('select')).toBeFalsy()
     })
@@ -205,7 +205,7 @@ describe('ContextMenu (Story 3.3)', () => {
     it('separators do not have menuitem role', () => {
       const wrapper = mountMenu()
       const hrs = wrapper.findAll('hr')
-      hrs.forEach(hr => {
+      hrs.forEach((hr) => {
         expect(hr.attributes('role')).toBeUndefined()
       })
     })

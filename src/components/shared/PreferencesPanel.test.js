@@ -52,7 +52,7 @@ describe('PreferencesPanel (Story 2.2)', () => {
       expect(rows[0].text()).toContain('Fondu enchaîné')
     })
 
-    it('le toggle reflète l\'état crossfadeEnabled du store', () => {
+    it("le toggle reflète l'état crossfadeEnabled du store", () => {
       preferencesStore.crossfadeEnabled = true
       const wrapper = mountPanel()
       const toggle = wrapper.find('[aria-label*="Fondu enchaîné"]')
@@ -75,14 +75,14 @@ describe('PreferencesPanel (Story 2.2)', () => {
       expect(toggle.attributes('aria-checked')).toBe('false')
     })
 
-    it('l\'aria-label du toggle reflète l\'état activé/désactivé', () => {
+    it("l'aria-label du toggle reflète l'état activé/désactivé", () => {
       preferencesStore.crossfadeEnabled = true
       const wrapper = mountPanel()
       const toggle = wrapper.find('[aria-label*="Fondu enchaîné"]')
       expect(toggle.attributes('aria-label')).toBe('Fondu enchaîné : activé')
     })
 
-    it('le toggle est synchronisé avec la même source que l\'ActionBar (preferencesStore.crossfadeEnabled)', async () => {
+    it("le toggle est synchronisé avec la même source que l'ActionBar (preferencesStore.crossfadeEnabled)", async () => {
       preferencesStore.crossfadeEnabled = true
       const wrapper = mountPanel()
 
