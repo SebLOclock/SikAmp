@@ -45,25 +45,31 @@ const activeDescendantId = computed(() => {
   return undefined
 })
 
-watch(() => playlistStore.trackCount, (newCount) => {
-  const added = newCount - previousTrackCount
-  if (added > 0) {
-    ariaAnnouncement.value = `${added} morceau${added > 1 ? 'x' : ''} ajouté${added > 1 ? 's' : ''} à la playlist`
+watch(
+  () => playlistStore.trackCount,
+  (newCount) => {
+    const added = newCount - previousTrackCount
+    if (added > 0) {
+      ariaAnnouncement.value = `${added} morceau${added > 1 ? 'x' : ''} ajouté${added > 1 ? 's' : ''} à la playlist`
+    }
+    // Keep focusedIndex in bounds after track list changes
+    if (focusedIndex.value >= newCount) {
+      focusedIndex.value = newCount - 1
+    }
+    previousTrackCount = newCount
   }
-  // Keep focusedIndex in bounds after track list changes
-  if (focusedIndex.value >= newCount) {
-    focusedIndex.value = newCount - 1
-  }
-  previousTrackCount = newCount
-})
+)
 
-watch(() => playlistStore.isEmpty, (isEmpty, wasEmpty) => {
-  if (wasEmpty && !isEmpty) {
-    ariaAnnouncement.value = 'Contrôles de lecture activés'
-  } else if (!wasEmpty && isEmpty) {
-    ariaAnnouncement.value = 'Contrôles de lecture désactivés'
+watch(
+  () => playlistStore.isEmpty,
+  (isEmpty, wasEmpty) => {
+    if (wasEmpty && !isEmpty) {
+      ariaAnnouncement.value = 'Contrôles de lecture activés'
+    } else if (!wasEmpty && isEmpty) {
+      ariaAnnouncement.value = 'Contrôles de lecture désactivés'
+    }
   }
-})
+)
 
 function handleDoubleClick(index) {
   playlistStore.playTrack(index)
@@ -98,9 +104,10 @@ function handleKeyDown(event) {
       handleContextMenuClose()
       return
     }
-    const focusedEl = focusedIndex.value >= 0
-      ? document.getElementById(`playlist-item-${focusedIndex.value}`)
-      : null
+    const focusedEl =
+      focusedIndex.value >= 0
+        ? document.getElementById(`playlist-item-${focusedIndex.value}`)
+        : null
     openContextMenuAtElement(focusedEl)
     return
   }
@@ -193,7 +200,11 @@ function handleMouseMove(event) {
 }
 
 function handleMouseUp() {
-  if (dragFromIndex.value >= 0 && dropTargetIndex.value >= 0 && dragFromIndex.value !== dropTargetIndex.value) {
+  if (
+    dragFromIndex.value >= 0 &&
+    dropTargetIndex.value >= 0 &&
+    dragFromIndex.value !== dropTargetIndex.value
+  ) {
     playlistStore.moveTrack(dragFromIndex.value, dropTargetIndex.value)
     focusedIndex.value = dropTargetIndex.value
   }
@@ -225,7 +236,11 @@ const contextMenuItems = computed(() => [
   { label: 'Sauvegarder playlist', action: 'save-playlist' },
   { label: 'Charger playlist', action: 'load-playlist' },
   { label: 'separator' },
-  { label: 'Retirer le morceau', action: 'remove-track', disabled: contextMenu.value.targetIndex < 0 },
+  {
+    label: 'Retirer le morceau',
+    action: 'remove-track',
+    disabled: contextMenu.value.targetIndex < 0
+  },
   { label: 'Retirer tout', action: 'remove-all', disabled: playlistStore.isEmpty }
 ])
 
@@ -278,14 +293,29 @@ function handleContextMenuClose() {
 function openContextMenuAtElement(el) {
   if (el) {
     const rect = el.getBoundingClientRect()
+<<<<<<< Updated upstream
     const targetIndex = el.id ? parseTrackIndex(el.id) : -1
     contextMenu.value = { visible: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, targetIndex }
+=======
+    const targetIndex = el.id ? parseInt(el.id.replace('playlist-item-', '')) : -1
+    contextMenu.value = {
+      visible: true,
+      x: rect.left + rect.width / 2,
+      y: rect.top + rect.height / 2,
+      targetIndex
+    }
+>>>>>>> Stashed changes
   } else {
     // No focused track — open at center of playlist
     const panelEl = document.querySelector('.playlist-panel')
     if (panelEl) {
       const rect = panelEl.getBoundingClientRect()
-      contextMenu.value = { visible: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, targetIndex: -1 }
+      contextMenu.value = {
+        visible: true,
+        x: rect.left + rect.width / 2,
+        y: rect.top + rect.height / 2,
+        targetIndex: -1
+      }
     }
   }
   ariaAnnouncement.value = 'Menu contextuel ouvert'
@@ -362,8 +392,14 @@ function trackAriaLabel(track, index) {
           'playlist-track--missing': track.missing
         }"
         :style="{
-          color: index === playlistStore.currentIndex ? skinStore.colors.activeTrack : skinStore.colors.playlistText,
-          borderTopColor: (index === dropTargetIndex && dragFromIndex !== index) ? skinStore.colors.activeTrack : 'transparent'
+          color:
+            index === playlistStore.currentIndex
+              ? skinStore.colors.activeTrack
+              : skinStore.colors.playlistText,
+          borderTopColor:
+            index === dropTargetIndex && dragFromIndex !== index
+              ? skinStore.colors.activeTrack
+              : 'transparent'
         }"
         @dblclick="handleDoubleClick(index)"
         @mousedown="handleMouseDown($event, index)"
@@ -408,7 +444,7 @@ function trackAriaLabel(track, index) {
   flex: 1;
   min-height: 120px;
   overflow-y: auto;
-  border-top: 1px solid #3F3F44;
+  border-top: 1px solid #3f3f44;
   position: relative;
 }
 
@@ -426,7 +462,7 @@ function trackAriaLabel(track, index) {
 }
 
 .drag-overlay-text {
-  color: #00FF00;
+  color: #00ff00;
   font-size: 14px;
   font-weight: bold;
   text-shadow: 0 0 8px rgba(0, 255, 0, 0.5);
@@ -436,7 +472,7 @@ function trackAriaLabel(track, index) {
   display: flex;
   padding: 4px 8px;
   border-bottom: 1px solid #333;
-  color: #00CC00;
+  color: #00cc00;
   font-weight: bold;
   position: sticky;
   top: 0;
@@ -460,7 +496,7 @@ function trackAriaLabel(track, index) {
 
 .playlist-track.is-focused {
   background-color: rgba(0, 255, 0, 0.1);
-  outline: 1px dashed #00FF00;
+  outline: 1px dashed #00ff00;
   outline-offset: -1px;
 }
 

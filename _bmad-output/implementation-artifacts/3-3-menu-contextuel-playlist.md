@@ -1,6 +1,6 @@
 # Story 3.3: Menu Contextuel Playlist
 
-Status: review
+Status: done
 
 ## Story
 

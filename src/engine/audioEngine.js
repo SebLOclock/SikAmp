@@ -106,8 +106,8 @@ function generateEqualPowerCurves(steps = 100) {
   const fadeIn = new Float32Array(steps)
   for (let i = 0; i < steps; i++) {
     const t = i / (steps - 1)
-    fadeOut[i] = Math.cos(t * Math.PI / 2)
-    fadeIn[i] = Math.sin(t * Math.PI / 2)
+    fadeOut[i] = Math.cos((t * Math.PI) / 2)
+    fadeIn[i] = Math.sin((t * Math.PI) / 2)
   }
   return { fadeOut, fadeIn }
 }
@@ -329,19 +329,41 @@ const audioEngine = {
   },
 
   // Event setters
-  set onTimeUpdate(cb) { onTimeUpdate = cb },
-  set onEnded(cb) { onEnded = cb },
-  set onError(cb) { onError = cb },
-  set onLoadedMetadata(cb) { onLoadedMetadata = cb },
-  set onCrossfadeStart(cb) { onCrossfadeStart = cb },
-  set onCrossfadeComplete(cb) { onCrossfadeComplete = cb },
+  set onTimeUpdate(cb) {
+    onTimeUpdate = cb
+  },
+  set onEnded(cb) {
+    onEnded = cb
+  },
+  set onError(cb) {
+    onError = cb
+  },
+  set onLoadedMetadata(cb) {
+    onLoadedMetadata = cb
+  },
+  set onCrossfadeStart(cb) {
+    onCrossfadeStart = cb
+  },
+  set onCrossfadeComplete(cb) {
+    onCrossfadeComplete = cb
+  },
 
   // Expose for testing
-  get _audioElement() { return getActiveAudio() },
-  get _audioContext() { return audioContext },
-  get _gainNode() { return masterGainNode },
-  get _sources() { return sources },
-  get _activeSource() { return activeSource }
+  get _audioElement() {
+    return getActiveAudio()
+  },
+  get _audioContext() {
+    return audioContext
+  },
+  get _gainNode() {
+    return masterGainNode
+  },
+  get _sources() {
+    return sources
+  },
+  get _activeSource() {
+    return activeSource
+  }
 }
 
 export { generateEqualPowerCurves }

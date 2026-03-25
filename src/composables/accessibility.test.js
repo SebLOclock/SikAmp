@@ -72,10 +72,18 @@ describe('Accessibility — Keyboard Shortcuts (Story 1.8)', () => {
     let escapeCalled = false
 
     mod.registerShortcutCallbacks({
-      onToggleShuffle: () => { shuffleToggled = true },
-      onToggleRepeat: () => { repeatToggled = true },
-      onToggleCrossfade: () => { crossfadeToggled = true },
-      onEscape: () => { escapeCalled = true },
+      onToggleShuffle: () => {
+        shuffleToggled = true
+      },
+      onToggleRepeat: () => {
+        repeatToggled = true
+      },
+      onToggleCrossfade: () => {
+        crossfadeToggled = true
+      },
+      onEscape: () => {
+        escapeCalled = true
+      },
       onOpenFile: vi.fn(),
       onSavePlaylist: vi.fn(),
       onLoadPlaylist: vi.fn()
@@ -83,10 +91,18 @@ describe('Accessibility — Keyboard Shortcuts (Story 1.8)', () => {
 
     // Store refs for assertions in closure
     handleKeyDown._testCallbacks = {
-      get shuffleToggled() { return shuffleToggled },
-      get repeatToggled() { return repeatToggled },
-      get crossfadeToggled() { return crossfadeToggled },
-      get escapeCalled() { return escapeCalled }
+      get shuffleToggled() {
+        return shuffleToggled
+      },
+      get repeatToggled() {
+        return repeatToggled
+      },
+      get crossfadeToggled() {
+        return crossfadeToggled
+      },
+      get escapeCalled() {
+        return escapeCalled
+      }
     }
   })
 
@@ -201,7 +217,11 @@ describe('Accessibility — Focus Trap (Story 1.8)', () => {
     expect(document.activeElement).toBe(btn1)
 
     // Simulate Shift+Tab on first element
-    const shiftTabEvent = new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true, bubbles: true })
+    const shiftTabEvent = new KeyboardEvent('keydown', {
+      key: 'Tab',
+      shiftKey: true,
+      bubbles: true
+    })
     Object.defineProperty(shiftTabEvent, 'preventDefault', { value: vi.fn() })
     container.dispatchEvent(shiftTabEvent)
 

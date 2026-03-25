@@ -23,11 +23,11 @@ function createMockAudio() {
     }),
     removeEventListener: vi.fn((event, cb) => {
       if (listeners[event]) {
-        listeners[event] = listeners[event].filter(l => l !== cb)
+        listeners[event] = listeners[event].filter((l) => l !== cb)
       }
     }),
     _emit: (event, data) => {
-      if (listeners[event]) listeners[event].forEach(cb => cb(data))
+      if (listeners[event]) listeners[event].forEach((cb) => cb(data))
     },
     currentTime: 0,
     duration: 180,
@@ -92,12 +92,18 @@ function resetMocks() {
     currentTime: 0
   }
 
-  vi.stubGlobal('AudioContext', vi.fn(() => mockAudioContext))
-  vi.stubGlobal('Audio', vi.fn(() => {
-    const audio = createMockAudio()
-    mockAudioInstances.push(audio)
-    return audio
-  }))
+  vi.stubGlobal(
+    'AudioContext',
+    vi.fn(() => mockAudioContext)
+  )
+  vi.stubGlobal(
+    'Audio',
+    vi.fn(() => {
+      const audio = createMockAudio()
+      mockAudioInstances.push(audio)
+      return audio
+    })
+  )
 }
 
 let audioEngine
@@ -173,10 +179,13 @@ describe('AudioEngine', () => {
       const mockAudio = createMockAudio()
       mockAudio.play.mockRejectedValueOnce(new Error('Not allowed'))
       mockAudioInstances.length = 0
-      vi.stubGlobal('Audio', vi.fn(() => {
-        mockAudioInstances.push(mockAudio)
-        return mockAudio
-      }))
+      vi.stubGlobal(
+        'Audio',
+        vi.fn(() => {
+          mockAudioInstances.push(mockAudio)
+          return mockAudio
+        })
+      )
 
       vi.resetModules()
       const module = await import('./audioEngine.js')
@@ -313,10 +322,13 @@ describe('AudioEngine', () => {
       // Preload on inactive source creates source B
       const nextAudio = createMockAudio()
       nextAudio.readyState = 4
-      vi.stubGlobal('Audio', vi.fn(() => {
-        mockAudioInstances.push(nextAudio)
-        return nextAudio
-      }))
+      vi.stubGlobal(
+        'Audio',
+        vi.fn(() => {
+          mockAudioInstances.push(nextAudio)
+          return nextAudio
+        })
+      )
       await audioEngine.preloadOnInactive('/music/next.mp3')
       expect(mockAudioInstances).toHaveLength(2)
     })
@@ -329,7 +341,10 @@ describe('AudioEngine', () => {
       // Preload creates source B
       mockAudioInstances[1] = createMockAudio()
       mockAudioInstances[1].readyState = 4
-      vi.stubGlobal('Audio', vi.fn(() => mockAudioInstances[1]))
+      vi.stubGlobal(
+        'Audio',
+        vi.fn(() => mockAudioInstances[1])
+      )
       await audioEngine.preloadOnInactive('/music/next.mp3')
       // gainNodes[2] = source B gainNode
       expect(mockGainNodes[2].gain.value).toBe(0)
@@ -352,8 +367,8 @@ describe('AudioEngine', () => {
       expect(fadeIn[4]).toBeCloseTo(1, 5)
 
       // At t=0.5 (midpoint): both should be ~0.707 (equal power)
-      expect(fadeOut[2]).toBeCloseTo(Math.cos(0.5 * Math.PI / 2), 5)
-      expect(fadeIn[2]).toBeCloseTo(Math.sin(0.5 * Math.PI / 2), 5)
+      expect(fadeOut[2]).toBeCloseTo(Math.cos((0.5 * Math.PI) / 2), 5)
+      expect(fadeIn[2]).toBeCloseTo(Math.sin((0.5 * Math.PI) / 2), 5)
 
       // Energy conservation: fadeOut² + fadeIn² ≈ 1 at all points
       for (let i = 0; i < 5; i++) {
@@ -370,10 +385,13 @@ describe('AudioEngine', () => {
       // Make the next Audio() call return a mock with readyState >= 3
       const nextAudio = createMockAudio()
       nextAudio.readyState = 4
-      vi.stubGlobal('Audio', vi.fn(() => {
-        mockAudioInstances.push(nextAudio)
-        return nextAudio
-      }))
+      vi.stubGlobal(
+        'Audio',
+        vi.fn(() => {
+          mockAudioInstances.push(nextAudio)
+          return nextAudio
+        })
+      )
 
       await audioEngine.preloadOnInactive('/music/next.mp3')
       expect(nextAudio.src).toBe('https://asset.localhost/music/next.mp3')
@@ -388,10 +406,13 @@ describe('AudioEngine', () => {
       // Preload on inactive
       const nextAudio = createMockAudio()
       nextAudio.readyState = 4
-      vi.stubGlobal('Audio', vi.fn(() => {
-        mockAudioInstances.push(nextAudio)
-        return nextAudio
-      }))
+      vi.stubGlobal(
+        'Audio',
+        vi.fn(() => {
+          mockAudioInstances.push(nextAudio)
+          return nextAudio
+        })
+      )
       await audioEngine.preloadOnInactive('/music/next.mp3')
 
       // Start crossfade

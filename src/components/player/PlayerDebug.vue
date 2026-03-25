@@ -74,12 +74,15 @@ function togglePause() {
       <p><strong>isPaused:</strong> {{ player.isPaused }}</p>
       <p><strong>isStopped:</strong> {{ player.isStopped }}</p>
       <p><strong>currentTrack:</strong> {{ player.currentTrack?.title || 'Aucun' }}</p>
-      <p><strong>Temps:</strong> {{ player.formattedCurrentTime }} / {{ player.formattedDuration }}</p>
+      <p>
+        <strong>Temps:</strong> {{ player.formattedCurrentTime }} / {{ player.formattedDuration }}
+      </p>
       <p><strong>Progression:</strong> {{ player.progressPercent.toFixed(1) }}%</p>
       <p><strong>Volume:</strong> {{ (player.volume * 100).toFixed(0) }}%</p>
 
       <div class="volume-control">
-        <label>Volume:
+        <label
+          >Volume:
           <input
             type="range"
             min="0"

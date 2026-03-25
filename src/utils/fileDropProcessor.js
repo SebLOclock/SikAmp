@@ -49,6 +49,8 @@ export async function processDroppedPaths(paths) {
   }
 
   const allFiles = [...directFiles, ...resolvedFiles]
-  console.log(`[FileDrop] Processed ${paths.length} paths → ${allFiles.length} audio files, ${wszFiles.length} skin files`)
+  console.log(
+    `[FileDrop] Processed ${paths.length} paths → ${allFiles.length} audio files, ${wszFiles.length} skin files`
+  )
   return { directFiles, resolvedFiles, allFiles, wszFiles }
 }

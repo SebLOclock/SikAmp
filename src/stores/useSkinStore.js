@@ -86,10 +86,18 @@ function parsePledit(text) {
     const value = line.slice(eq + 1).trim()
     if (!/^#[0-9A-Fa-f]{3,6}$/.test(value)) continue
     switch (key) {
-      case 'Normal': colors.playlistText = value; break
-      case 'Current': colors.activeTrack = value; break
-      case 'NormalBG': colors.playlistBg = value; break
-      case 'SelectedBG': colors.selectedBg = value; break
+      case 'Normal':
+        colors.playlistText = value
+        break
+      case 'Current':
+        colors.activeTrack = value
+        break
+      case 'NormalBG':
+        colors.playlistBg = value
+        break
+      case 'SelectedBG':
+        colors.selectedBg = value
+        break
     }
   }
   return colors
@@ -153,11 +161,11 @@ export const useSkinStore = defineStore('skin', {
           }
           loadPromises.push(
             loadImage(assetUrl)
-              .then(img => {
+              .then((img) => {
                 newCache.set(assetKey, img)
                 console.log(`[SkinStore] Loaded asset: ${assetKey} from ${baseName}`)
               })
-              .catch(err => {
+              .catch((err) => {
                 console.warn(`[SkinStore] Failed to load asset ${assetKey}: ${err.message}`)
                 // Fallback: keep default (no image in cache = programmatic rendering)
               })
@@ -169,15 +177,15 @@ export const useSkinStore = defineStore('skin', {
           const fullPath = `${extractDir}/${file}`
           loadPromises.push(
             fetch(convertFileSrc(fullPath))
-              .then(r => r.text())
-              .then(text => {
+              .then((r) => r.text())
+              .then((text) => {
                 const parsed = parsePledit(text)
                 if (Object.keys(parsed).length > 0) {
                   pendingColors = { ...DEFAULT_COLORS, ...parsed }
                   console.log('[SkinStore] Loaded pledit palette:', Object.keys(parsed))
                 }
               })
-              .catch(err => {
+              .catch((err) => {
                 console.warn('[SkinStore] Failed to parse pledit.txt:', err.message)
               })
           )

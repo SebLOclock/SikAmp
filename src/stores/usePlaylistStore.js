@@ -6,7 +6,15 @@ import { isSupportedFormat, extractFileName } from '@/utils/formatValidator.js'
 function extractTrackInfo(filePath) {
   const fileName = filePath.split('/').pop().split('\\').pop()
   const name = fileName.replace(/\.[^.]+$/, '')
-  return { path: filePath, title: name, artist: 'Inconnu', duration: 0, bitrate: null, sampleRate: null, channels: null }
+  return {
+    path: filePath,
+    title: name,
+    artist: 'Inconnu',
+    duration: 0,
+    bitrate: null,
+    sampleRate: null,
+    channels: null
+  }
 }
 
 export const usePlaylistStore = defineStore('playlist', {
@@ -45,7 +53,7 @@ export const usePlaylistStore = defineStore('playlist', {
     },
 
     addTracks(filePaths) {
-      const newTracks = filePaths.map(fp => extractTrackInfo(fp))
+      const newTracks = filePaths.map((fp) => extractTrackInfo(fp))
       const startIndex = this.tracks.length
       this.tracks.push(...newTracks)
       // Clear any persistent error feedback since new tracks are available
@@ -65,7 +73,8 @@ export const usePlaylistStore = defineStore('playlist', {
         try {
           const meta = await invoke('get_audio_metadata', { path: expectedPath })
           // Post-await: verify track identity hasn't changed (playlist may have been modified)
-          if (trackIndex >= this.tracks.length || this.tracks[trackIndex]?.path !== expectedPath) continue
+          if (trackIndex >= this.tracks.length || this.tracks[trackIndex]?.path !== expectedPath)
+            continue
           track.title = meta.title || track.title
           track.artist = meta.artist || 'Inconnu'
           track.duration = meta.duration || 0
@@ -292,7 +301,7 @@ export const usePlaylistStore = defineStore('playlist', {
         if (!savePath) return // user cancelled
       }
 
-      const tracksData = this.tracks.map(t => ({
+      const tracksData = this.tracks.map((t) => ({
         path: t.path,
         title: t.title || '',
         artist: t.artist || '',
@@ -303,7 +312,12 @@ export const usePlaylistStore = defineStore('playlist', {
         await invoke('save_playlist', { path: savePath, tracks: tracksData })
         this.playlistPath = savePath
         // Extract name from path
-        const fileName = savePath.split('/').pop().split('\\').pop().replace(/\.m3u8?$/i, '')
+        const fileName = savePath
+          .split('/')
+          .pop()
+          .split('\\')
+          .pop()
+          .replace(/\.m3u8?$/i, '')
         this.playlistName = fileName
         console.log('[PlaylistStore] Playlist saved:', savePath)
         playerStore.showFeedback('Playlist sauvegardée', 'success')
@@ -371,9 +385,16 @@ export const usePlaylistStore = defineStore('playlist', {
 
         // Replace current playlist
         playerStore.stop()
-        this.tracks = entries.map(e => ({
+        this.tracks = entries.map((e) => ({
           path: e.path,
-          title: e.title || e.path.split('/').pop().split('\\').pop().replace(/\.[^.]+$/, ''),
+          title:
+            e.title ||
+            e.path
+              .split('/')
+              .pop()
+              .split('\\')
+              .pop()
+              .replace(/\.[^.]+$/, ''),
           artist: e.artist || 'Inconnu',
           duration: e.duration || 0,
           bitrate: null,
@@ -386,14 +407,19 @@ export const usePlaylistStore = defineStore('playlist', {
 
         // Set playlist path/name
         this.playlistPath = filePath
-        const fileName = filePath.split('/').pop().split('\\').pop().replace(/\.m3u8?$/i, '')
+        const fileName = filePath
+          .split('/')
+          .pop()
+          .split('\\')
+          .pop()
+          .replace(/\.m3u8?$/i, '')
         this.playlistName = fileName
 
         console.log(`[PlaylistStore] Playlist loaded: ${filePath}, ${entries.length} tracks`)
         playerStore.showFeedback(`Playlist chargée, ${entries.length} morceaux`, 'success')
 
         // Enrich metadata for existing (non-missing) tracks only
-        const nonMissingTracks = this.tracks.filter(t => !t.missing)
+        const nonMissingTracks = this.tracks.filter((t) => !t.missing)
         if (nonMissingTracks.length > 0) {
           for (let i = 0; i < this.tracks.length; i++) {
             if (!this.tracks[i].missing) {
@@ -405,7 +431,7 @@ export const usePlaylistStore = defineStore('playlist', {
         console.warn('[PlaylistStore] Failed to load:', err)
         playerStore.showFeedback('Erreur de chargement', 'error')
       }
-    },
+    }
 
     // Auto-advance is now handled by playerStore.onEnded callback
     // which works with both dual-source audio elements

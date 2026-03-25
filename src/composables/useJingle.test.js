@@ -28,7 +28,10 @@ describe('useJingle', () => {
       addEventListener: vi.fn(),
       removeEventListener: vi.fn()
     }
-    vi.stubGlobal('Audio', vi.fn(() => mockAudio))
+    vi.stubGlobal(
+      'Audio',
+      vi.fn(() => mockAudio)
+    )
     mockPreferencesStore.jingleEnabled = true
   })
 

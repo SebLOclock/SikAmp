@@ -1,5 +1,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { setupCanvas, drawSprite, drawBackground, drawButton, drawSlider, drawBitmapText, drawScrollingText, measureText } from './skinRenderer'
+import {
+  setupCanvas,
+  drawSprite,
+  drawBackground,
+  drawButton,
+  drawSlider,
+  drawBitmapText,
+  drawScrollingText,
+  measureText
+} from './skinRenderer'
 
 // Mock canvas context
 function createMockContext() {
@@ -105,7 +114,11 @@ describe('skinRenderer', () => {
     })
 
     it('uses skin colors when skinStore is provided', () => {
-      const mockSkinStore = { colors: { background: '#112233' }, isCustomSkin: false, mainBmpUrl: null }
+      const mockSkinStore = {
+        colors: { background: '#112233' },
+        isCustomSkin: false,
+        mainBmpUrl: null
+      }
       drawBackground(ctx, 800, 100, mockSkinStore)
       expect(ctx.fillStyle).toBe('#112233')
       expect(ctx.fillRect).toHaveBeenCalledWith(0, 0, 800, 100)

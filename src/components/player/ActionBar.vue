@@ -108,7 +108,7 @@ function handleMouseLeave() {
 const emit = defineEmits(['prefs', 'skins'])
 
 function executeAction(btnId) {
-  const btn = BUTTONS.find(b => b.id === btnId)
+  const btn = BUTTONS.find((b) => b.id === btnId)
   if (btn && btn.toggle) {
     if (btnId === 'crossfade') {
       preferencesStore.setCrossfadeEnabled(!preferencesStore.crossfadeEnabled)
@@ -116,7 +116,10 @@ function executeAction(btnId) {
     } else {
       toggleState.value[btnId] = !toggleState.value[btnId]
     }
-    console.log(`[ActionBar] ${btnId} toggled:`, btnId === 'crossfade' ? preferencesStore.crossfadeEnabled : toggleState.value[btnId])
+    console.log(
+      `[ActionBar] ${btnId} toggled:`,
+      btnId === 'crossfade' ? preferencesStore.crossfadeEnabled : toggleState.value[btnId]
+    )
   } else if (btnId === 'prefs') {
     emit('prefs')
   } else if (btnId === 'skins') {
@@ -131,11 +134,17 @@ onMounted(() => {
   toggleState.value.crossfade = preferencesStore.crossfadeEnabled
   draw()
 })
-watch(() => [skinStore.renderMode, skinStore.skinVersion], () => draw())
-watch(() => preferencesStore.crossfadeEnabled, (val) => {
-  toggleState.value.crossfade = val
-  draw()
-})
+watch(
+  () => [skinStore.renderMode, skinStore.skinVersion],
+  () => draw()
+)
+watch(
+  () => preferencesStore.crossfadeEnabled,
+  (val) => {
+    toggleState.value.crossfade = val
+    draw()
+  }
+)
 </script>
 
 <template>
@@ -150,16 +159,27 @@ watch(() => preferencesStore.crossfadeEnabled, (val) => {
     />
     <!-- Accessible toggle buttons -->
     <button
-      v-for="btn in BUTTONS.filter(b => b.toggle)"
+      v-for="btn in BUTTONS.filter((b) => b.toggle)"
       :key="btn.id"
       class="sr-only-btn"
       role="switch"
-      :aria-checked="btn.id === 'crossfade' ? preferencesStore.crossfadeEnabled : toggleState[btn.id]"
-      :aria-label="btn.id === 'shuffle' ? 'Lecture aléatoire' : btn.id === 'repeat' ? 'Répétition' : 'Fondu enchaîné'"
-      @click="executeAction(btn.id); draw()"
+      :aria-checked="
+        btn.id === 'crossfade' ? preferencesStore.crossfadeEnabled : toggleState[btn.id]
+      "
+      :aria-label="
+        btn.id === 'shuffle'
+          ? 'Lecture aléatoire'
+          : btn.id === 'repeat'
+            ? 'Répétition'
+            : 'Fondu enchaîné'
+      "
+      @click="
+        executeAction(btn.id)
+        draw()
+      "
     />
     <button
-      v-for="btn in BUTTONS.filter(b => !b.toggle)"
+      v-for="btn in BUTTONS.filter((b) => !b.toggle)"
       :key="btn.id"
       class="sr-only-btn"
       :aria-label="btn.id === 'skins' ? 'Skins' : 'Préférences'"

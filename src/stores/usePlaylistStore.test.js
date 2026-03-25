@@ -575,7 +575,13 @@ describe('usePlaylistStore', () => {
 
       const loadedEntries = [
         { path: '/music/a.mp3', title: 'Song A', artist: 'Artist A', duration: 200, exists: true },
-        { path: '/music/missing.mp3', title: 'Gone', artist: 'Nobody', duration: 100, exists: false }
+        {
+          path: '/music/missing.mp3',
+          title: 'Gone',
+          artist: 'Nobody',
+          duration: 100,
+          exists: false
+        }
       ]
       mockInvoke.mockResolvedValueOnce(loadedEntries)
 
@@ -589,7 +595,10 @@ describe('usePlaylistStore', () => {
       expect(store.playlistPath).toBe('/tmp/loaded.m3u8')
       expect(store.playlistName).toBe('loaded')
       expect(store.currentIndex).toBe(-1)
-      expect(mockPlayerStore.showFeedback).toHaveBeenCalledWith('Playlist chargée, 2 morceaux', 'success')
+      expect(mockPlayerStore.showFeedback).toHaveBeenCalledWith(
+        'Playlist chargée, 2 morceaux',
+        'success'
+      )
     })
 
     it('shows error feedback on load failure', async () => {

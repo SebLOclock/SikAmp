@@ -2,7 +2,13 @@
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { usePlayerStore } from '@/stores/usePlayerStore'
 import { useSkinStore } from '@/stores/useSkinStore'
-import { setupCanvas, drawBackground, drawButton, drawSlider, drawBitmapText } from '@/engine/skinRenderer'
+import {
+  setupCanvas,
+  drawBackground,
+  drawButton,
+  drawSlider,
+  drawBitmapText
+} from '@/engine/skinRenderer'
 
 const canvasRef = ref(null)
 const playerStore = usePlayerStore()
@@ -34,7 +40,15 @@ function draw() {
 
   // Volume icon button
   drawButton(ctx, ICON_ZONE.x, ICON_ZONE.y, ICON_ZONE.w, ICON_ZONE.h, 'normal', '', skinStore)
-  drawBitmapText(ctx, volumeIcon.value, ICON_ZONE.x + 6, ICON_ZONE.y + 6, 11, null, skinStore.colors.textPrimary)
+  drawBitmapText(
+    ctx,
+    volumeIcon.value,
+    ICON_ZONE.x + 6,
+    ICON_ZONE.y + 6,
+    11,
+    null,
+    skinStore.colors.textPrimary
+  )
 
   // Volume slider
   const vol = isMuted.value ? 0 : playerStore.volume
@@ -54,8 +68,12 @@ function handleMouseDown(event) {
   const canvasY = (event.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
 
   // Click on icon = toggle mute
-  if (canvasX >= ICON_ZONE.x && canvasX <= ICON_ZONE.x + ICON_ZONE.w &&
-      canvasY >= ICON_ZONE.y && canvasY <= ICON_ZONE.y + ICON_ZONE.h) {
+  if (
+    canvasX >= ICON_ZONE.x &&
+    canvasX <= ICON_ZONE.x + ICON_ZONE.w &&
+    canvasY >= ICON_ZONE.y &&
+    canvasY <= ICON_ZONE.y + ICON_ZONE.h
+  ) {
     toggleMute()
     return
   }
@@ -111,17 +129,15 @@ onUnmounted(() => {
 
 watch(
   () => [playerStore.volume, skinStore.renderMode, skinStore.skinVersion],
-  () => { if (!isDragging) draw() }
+  () => {
+    if (!isDragging) draw()
+  }
 )
 </script>
 
 <template>
   <div class="canvas-wrapper">
-    <canvas
-      ref="canvasRef"
-      class="volume-canvas"
-      @mousedown="handleMouseDown"
-    />
+    <canvas ref="canvasRef" class="volume-canvas" @mousedown="handleMouseDown" />
     <!-- Accessible slider -->
     <input
       type="range"

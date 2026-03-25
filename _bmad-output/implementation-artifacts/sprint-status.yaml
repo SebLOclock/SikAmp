@@ -36,6 +36,7 @@
 
 generated: 2026-03-21
 last_updated: '2026-03-25'
+# Updated: epic-4-retrospective moved to done
 # Updated: story 4-2 moved to in-progress
 # Updated: story 4-1 moved to in-progress
 # Updated: story 4-1 moved to ready-for-dev
@@ -72,11 +73,11 @@ development_status:
   epic-3-retrospective: done
 
   # Epic 4 : Skins Personnalises
-  epic-4: in-progress
+  epic-4: done
   epic-4-spike-wsz-parser: done
   4-1-parseur-de-skins-wsz-et-chargement: done
-  4-2-selecteur-de-skins-et-retour-au-defaut: review
-  epic-4-retrospective: optional
+  4-2-selecteur-de-skins-et-retour-au-defaut: done
+  epic-4-retrospective: done
 
   # Epic 5 : Distribution, Installation & Mises a Jour
   epic-5: backlog

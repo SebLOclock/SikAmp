@@ -4,7 +4,7 @@
 
 /* Global focus-visible styles */
 :focus-visible {
-  outline: 1px dashed #00FF00;
+  outline: 1px dashed #00ff00;
   outline-offset: 2px;
   z-index: 5;
 }
@@ -12,7 +12,7 @@
 /* Hidden overlay buttons/inputs show focus ring without changing layout */
 .sr-only-btn:focus-visible,
 .sr-only-overlay:focus-visible {
-  outline: 1px dashed #00FF00;
+  outline: 1px dashed #00ff00;
   outline-offset: 2px;
   z-index: 5;
 }

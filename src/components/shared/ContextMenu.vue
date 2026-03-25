@@ -64,7 +64,7 @@ function handleKeyDown(event) {
     case 'ArrowDown': {
       event.preventDefault()
       event.stopPropagation()
-      const currentActionableIdx = actionable.findIndex(a => a.index === focusedItemIndex.value)
+      const currentActionableIdx = actionable.findIndex((a) => a.index === focusedItemIndex.value)
       const nextIdx = currentActionableIdx < actionable.length - 1 ? currentActionableIdx + 1 : 0
       focusedItemIndex.value = actionable[nextIdx].index
       focusItem(focusedItemIndex.value)
@@ -73,7 +73,7 @@ function handleKeyDown(event) {
     case 'ArrowUp': {
       event.preventDefault()
       event.stopPropagation()
-      const currentActionableIdx = actionable.findIndex(a => a.index === focusedItemIndex.value)
+      const currentActionableIdx = actionable.findIndex((a) => a.index === focusedItemIndex.value)
       const prevIdx = currentActionableIdx > 0 ? currentActionableIdx - 1 : actionable.length - 1
       focusedItemIndex.value = actionable[prevIdx].index
       focusItem(focusedItemIndex.value)
@@ -108,25 +108,29 @@ function handleClickOutside(event) {
   }
 }
 
-watch(() => props.visible, async (visible) => {
-  if (visible) {
-    console.log(`[ContextMenu] Menu opened at (${props.x}, ${props.y})`)
-    // Focus first actionable item
-    const actionable = getActionableItems()
-    focusedItemIndex.value = actionable.length > 0 ? actionable[0].index : 0
+watch(
+  () => props.visible,
+  async (visible) => {
+    if (visible) {
+      console.log(`[ContextMenu] Menu opened at (${props.x}, ${props.y})`)
+      // Focus first actionable item
+      const actionable = getActionableItems()
+      focusedItemIndex.value = actionable.length > 0 ? actionable[0].index : 0
 
-    await nextTick()
-    if (menuRef.value) {
-      clampToViewport()
-      activateTrap(menuRef.value)
-      focusItem(focusedItemIndex.value)
+      await nextTick()
+      if (menuRef.value) {
+        clampToViewport()
+        activateTrap(menuRef.value)
+        focusItem(focusedItemIndex.value)
+      }
+      document.addEventListener('mousedown', handleClickOutside)
+    } else {
+      document.removeEventListener('mousedown', handleClickOutside)
+      deactivateTrap()
     }
-    document.addEventListener('mousedown', handleClickOutside)
-  } else {
-    document.removeEventListener('mousedown', handleClickOutside)
-    deactivateTrap()
-  }
-}, { immediate: true })
+  },
+  { immediate: true }
+)
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutside)
@@ -163,7 +167,10 @@ onBeforeUnmount(() => {
         }"
         :style="{
           color: item.disabled ? skinStore.colors.disabledControls : skinStore.colors.playlistText,
-          backgroundColor: index === focusedItemIndex && !item.disabled ? skinStore.colors.accentMetallic : 'transparent'
+          backgroundColor:
+            index === focusedItemIndex && !item.disabled
+              ? skinStore.colors.accentMetallic
+              : 'transparent'
         }"
         @click="handleItemClick(item)"
         @mouseenter="!item.disabled && (focusedItemIndex = index)"

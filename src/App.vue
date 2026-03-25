@@ -25,7 +25,11 @@ const playerStore = usePlayerStore()
 const playlistStore = usePlaylistStore()
 const preferencesStore = usePreferencesStore()
 const { playJingle } = useJingle()
-const { restoreState: restoreWindowState, listenToChanges: listenWindowChanges, destroy: destroyWindowListeners } = useWindowState()
+const {
+  restoreState: restoreWindowState,
+  listenToChanges: listenWindowChanges,
+  destroy: destroyWindowListeners
+} = useWindowState()
 useKeyboardShortcuts()
 
 function toggleOverlay(name) {
@@ -37,14 +41,33 @@ function closeOverlay() {
 }
 
 registerShortcutCallbacks({
-  onEscape: () => { closeOverlay() },
-  onToggleShuffle: () => { actionBarRef.value?.executeAction('shuffle'); actionBarRef.value?.draw?.() },
-  onToggleRepeat: () => { actionBarRef.value?.executeAction('repeat'); actionBarRef.value?.draw?.() },
-  onToggleCrossfade: () => { actionBarRef.value?.executeAction('crossfade'); actionBarRef.value?.draw?.() },
-  onOpenFile: () => { playlistStore.openFiles() },
-  onSavePlaylist: () => { playlistStore.savePlaylist() },
-  onLoadPlaylist: () => { playlistStore.loadPlaylist() },
-  onNewPlaylist: () => { playlistStore.newPlaylist() }
+  onEscape: () => {
+    closeOverlay()
+  },
+  onToggleShuffle: () => {
+    actionBarRef.value?.executeAction('shuffle')
+    actionBarRef.value?.draw?.()
+  },
+  onToggleRepeat: () => {
+    actionBarRef.value?.executeAction('repeat')
+    actionBarRef.value?.draw?.()
+  },
+  onToggleCrossfade: () => {
+    actionBarRef.value?.executeAction('crossfade')
+    actionBarRef.value?.draw?.()
+  },
+  onOpenFile: () => {
+    playlistStore.openFiles()
+  },
+  onSavePlaylist: () => {
+    playlistStore.savePlaylist()
+  },
+  onLoadPlaylist: () => {
+    playlistStore.loadPlaylist()
+  },
+  onNewPlaylist: () => {
+    playlistStore.newPlaylist()
+  }
 })
 
 const { isDragging } = useFileDrop(handleFilesDropped)
@@ -65,7 +88,7 @@ async function addTracksInBatches(paths, autoPlay) {
       playlistStore.playTrack(0)
     }
     if (i + BATCH_SIZE < paths.length) {
-      await new Promise(resolve => requestAnimationFrame(resolve))
+      await new Promise((resolve) => requestAnimationFrame(resolve))
     }
   }
 }
@@ -183,7 +206,11 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <main class="app" :class="renderModeClass" :style="{ backgroundColor: skinStore.colors.background }">
+  <main
+    class="app"
+    :class="renderModeClass"
+    :style="{ backgroundColor: skinStore.colors.background }"
+  >
     <div class="player-window" :style="playerWindowStyle">
       <PlayerDisplay />
       <SeekBar />
@@ -191,7 +218,11 @@ onUnmounted(() => {
         <TransportControls @prev="handlePrev" @next="handleNext" />
         <VolumeSlider />
       </div>
-      <ActionBar ref="actionBarRef" @prefs="toggleOverlay('preferences')" @skins="toggleOverlay('skins')" />
+      <ActionBar
+        ref="actionBarRef"
+        @prefs="toggleOverlay('preferences')"
+        @skins="toggleOverlay('skins')"
+      />
     </div>
     <PlaylistPanel :is-dragging="isDragging" />
     <PreferencesPanel :visible="activeOverlay === 'preferences'" @close="closeOverlay" />
@@ -205,8 +236,8 @@ onUnmounted(() => {
   font-size: 12px;
   line-height: 1.4;
   font-weight: 400;
-  color: #00FF00;
-  background-color: #29292E;
+  color: #00ff00;
+  background-color: #29292e;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -249,5 +280,4 @@ onUnmounted(() => {
 .controls-row > :last-child {
   flex-shrink: 0;
 }
-
 </style>
