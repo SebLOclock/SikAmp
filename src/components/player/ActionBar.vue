@@ -39,7 +39,7 @@ function draw() {
   if (!canvas) return
   const ctx = setupCanvas(canvas, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore.renderMode)
 
-  drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT)
+  drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore)
 
   // Top border
   ctx.fillStyle = skinStore.colors.darkEdge
@@ -50,7 +50,7 @@ function draw() {
     if (pressedButton.value === btn.id) state = 'pressed'
     else if (hoveredButton.value === btn.id) state = 'hover'
 
-    drawButton(ctx, btn.x, BTN_Y, BTN_W, BTN_H, state, btn.label)
+    drawButton(ctx, btn.x, BTN_Y, BTN_W, BTN_H, state, btn.label, skinStore)
 
     // Toggle ON indicator — green bar at bottom
     if (btn.toggle && toggleState.value[btn.id]) {
@@ -131,7 +131,7 @@ onMounted(() => {
   toggleState.value.crossfade = preferencesStore.crossfadeEnabled
   draw()
 })
-watch(() => skinStore.renderMode, () => draw())
+watch(() => [skinStore.renderMode, skinStore.skinVersion], () => draw())
 watch(() => preferencesStore.crossfadeEnabled, (val) => {
   toggleState.value.crossfade = val
   draw()

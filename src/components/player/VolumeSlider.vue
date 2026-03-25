@@ -30,15 +30,15 @@ function draw() {
   if (!canvas) return
   const ctx = setupCanvas(canvas, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore.renderMode)
 
-  drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT)
+  drawBackground(ctx, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore)
 
   // Volume icon button
-  drawButton(ctx, ICON_ZONE.x, ICON_ZONE.y, ICON_ZONE.w, ICON_ZONE.h, 'normal')
+  drawButton(ctx, ICON_ZONE.x, ICON_ZONE.y, ICON_ZONE.w, ICON_ZONE.h, 'normal', '', skinStore)
   drawBitmapText(ctx, volumeIcon.value, ICON_ZONE.x + 6, ICON_ZONE.y + 6, 11, null, skinStore.colors.textPrimary)
 
   // Volume slider
   const vol = isMuted.value ? 0 : playerStore.volume
-  drawSlider(ctx, SLIDER_ZONE.x, SLIDER_ZONE.y, SLIDER_ZONE.w, SLIDER_ZONE.h, vol, 0, 1)
+  drawSlider(ctx, SLIDER_ZONE.x, SLIDER_ZONE.y, SLIDER_ZONE.w, SLIDER_ZONE.h, vol, 0, 1, skinStore)
 }
 
 function getVolumeFromX(event) {
@@ -110,7 +110,7 @@ onUnmounted(() => {
 })
 
 watch(
-  () => [playerStore.volume, skinStore.renderMode],
+  () => [playerStore.volume, skinStore.renderMode, skinStore.skinVersion],
   () => { if (!isDragging) draw() }
 )
 </script>

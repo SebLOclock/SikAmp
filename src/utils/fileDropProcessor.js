@@ -11,19 +11,26 @@ function isSupportedAudio(filePath) {
   return SUPPORTED_AUDIO_FORMATS.includes(getExtension(filePath))
 }
 
+export function isWszFile(filePath) {
+  return getExtension(filePath) === 'wsz'
+}
+
 /**
  * Process dropped paths by resolving them into audio file paths.
- * Returns an async generator that yields audio paths progressively:
+ * Also separates .wsz skin files from audio files.
  * - First yields directly-dropped audio files (instant)
  * - Then yields files found by resolving remaining paths via Rust backend
  *   (which handles directory detection, recursive scanning, and filtering)
  */
 export async function processDroppedPaths(paths) {
   const directFiles = []
+  const wszFiles = []
   const pathsToResolve = []
 
   for (const p of paths) {
-    if (isSupportedAudio(p)) {
+    if (isWszFile(p)) {
+      wszFiles.push(p)
+    } else if (isSupportedAudio(p)) {
       directFiles.push(p)
     } else {
       // Let the backend determine if it's a directory, extensionless file, etc.
@@ -42,6 +49,6 @@ export async function processDroppedPaths(paths) {
   }
 
   const allFiles = [...directFiles, ...resolvedFiles]
-  console.log(`[FileDrop] Processed ${paths.length} paths → ${allFiles.length} audio files`)
-  return { directFiles, resolvedFiles, allFiles }
+  console.log(`[FileDrop] Processed ${paths.length} paths → ${allFiles.length} audio files, ${wszFiles.length} skin files`)
+  return { directFiles, resolvedFiles, allFiles, wszFiles }
 }

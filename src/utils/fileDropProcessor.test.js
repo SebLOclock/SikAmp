@@ -103,6 +103,33 @@ describe('fileDropProcessor', () => {
     })
   })
 
+  describe('wsz skin file detection', () => {
+    it('separates .wsz files from audio files', async () => {
+      const { directFiles, wszFiles } = await processDroppedPaths([
+        '/music/song.mp3',
+        '/skins/cool.wsz',
+        '/music/track.flac'
+      ])
+      expect(directFiles).toEqual(['/music/song.mp3', '/music/track.flac'])
+      expect(wszFiles).toEqual(['/skins/cool.wsz'])
+    })
+
+    it('detects .wsz case-insensitively', async () => {
+      const { wszFiles } = await processDroppedPaths(['/skins/Theme.WSZ'])
+      expect(wszFiles).toEqual(['/skins/Theme.WSZ'])
+    })
+
+    it('does not send .wsz files to backend resolution', async () => {
+      await processDroppedPaths(['/skins/cool.wsz'])
+      expect(mockInvoke).not.toHaveBeenCalled()
+    })
+
+    it('returns empty wszFiles when no skins dropped', async () => {
+      const { wszFiles } = await processDroppedPaths(['/music/song.mp3'])
+      expect(wszFiles).toEqual([])
+    })
+  })
+
   describe('edge cases', () => {
     it('returns empty results for empty input', async () => {
       const { directFiles, resolvedFiles, allFiles } = await processDroppedPaths([])

@@ -35,7 +35,9 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-21
-last_updated: 2026-03-25
+last_updated: '2026-03-25'
+# Updated: story 4-1 moved to in-progress
+# Updated: story 4-1 moved to ready-for-dev
 project: SikAmp
 project_key: NOKEY
 tracking_system: file-system
@@ -62,15 +64,16 @@ development_status:
   epic-2-retrospective: done
 
   # Epic 3 : Gestion des Playlists
-  epic-3: in-progress
+  epic-3: done
   3-1-creer-et-editer-des-playlists: done
   3-2-sauvegarder-et-charger-des-playlists: done
-  3-3-menu-contextuel-playlist: review
-  epic-3-retrospective: optional
+  3-3-menu-contextuel-playlist: done
+  epic-3-retrospective: done
 
   # Epic 4 : Skins Personnalises
-  epic-4: backlog
-  4-1-parseur-de-skins-wsz-et-chargement: backlog
+  epic-4: in-progress
+  epic-4-spike-wsz-parser: done
+  4-1-parseur-de-skins-wsz-et-chargement: review
   4-2-selecteur-de-skins-et-retour-au-defaut: backlog
   epic-4-retrospective: optional
 
