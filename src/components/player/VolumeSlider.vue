@@ -129,6 +129,10 @@ watch(
       min="0"
       max="100"
       :value="Math.round(playerStore.volume * 100)"
+      :aria-valuemin="0"
+      :aria-valuemax="100"
+      :aria-valuenow="Math.round(playerStore.volume * 100)"
+      step="5"
       aria-label="Volume"
       @input="handleAccessibleInput"
     />

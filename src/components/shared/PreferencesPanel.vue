@@ -2,10 +2,12 @@
 import { ref, watch, nextTick } from 'vue'
 import { useSkinStore } from '@/stores/useSkinStore'
 import { usePreferencesStore } from '@/stores/usePreferencesStore'
+import { useFocusTrap } from '@/composables/useFocusTrap'
 
 const skinStore = useSkinStore()
 const preferencesStore = usePreferencesStore()
 const overlayRef = ref(null)
+const { activate: activateTrap, deactivate: deactivateTrap } = useFocusTrap()
 
 const props = defineProps({
   visible: {
@@ -19,7 +21,9 @@ const emit = defineEmits(['close'])
 watch(() => props.visible, async (v) => {
   if (v) {
     await nextTick()
-    overlayRef.value?.focus()
+    activateTrap(overlayRef.value)
+  } else {
+    deactivateTrap()
   }
 })
 

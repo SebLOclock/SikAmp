@@ -78,7 +78,11 @@ watch(
       :min="0"
       :max="Math.floor(playerStore.duration || 0)"
       :value="Math.floor(playerStore.currentTime)"
-      aria-label="Position de lecture"
+      :aria-valuemin="0"
+      :aria-valuemax="Math.floor(playerStore.duration || 0)"
+      :aria-valuenow="Math.floor(playerStore.currentTime)"
+      step="5"
+      aria-label="Position dans le morceau"
       @input="(e) => playerStore.seek(Number(e.target.value))"
     />
   </div>

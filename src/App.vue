@@ -4,9 +4,10 @@ import { useSkinStore } from '@/stores/useSkinStore'
 import { usePlayerStore } from '@/stores/usePlayerStore'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { usePreferencesStore } from '@/stores/usePreferencesStore'
-import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
+import { useKeyboardShortcuts, registerShortcutCallbacks } from '@/composables/useKeyboardShortcuts'
 import { useFileDrop } from '@/composables/useFileDrop'
 import { useJingle } from '@/composables/useJingle'
+import '@/assets/focus-styles.css'
 import PlayerDisplay from '@/components/player/PlayerDisplay.vue'
 import SeekBar from '@/components/player/SeekBar.vue'
 import TransportControls from '@/components/player/TransportControls.vue'
@@ -16,12 +17,23 @@ import PlaylistPanel from '@/components/playlist/PlaylistPanel.vue'
 import PreferencesPanel from '@/components/shared/PreferencesPanel.vue'
 
 const showPreferences = ref(false)
+const actionBarRef = ref(null)
 const skinStore = useSkinStore()
 const playerStore = usePlayerStore()
 const playlistStore = usePlaylistStore()
 const preferencesStore = usePreferencesStore()
 const { playJingle } = useJingle()
 useKeyboardShortcuts()
+
+registerShortcutCallbacks({
+  onEscape: () => { showPreferences.value = false },
+  onToggleShuffle: () => { actionBarRef.value?.executeAction('shuffle'); actionBarRef.value?.draw?.() },
+  onToggleRepeat: () => { actionBarRef.value?.executeAction('repeat'); actionBarRef.value?.draw?.() },
+  onToggleCrossfade: () => { actionBarRef.value?.executeAction('crossfade'); actionBarRef.value?.draw?.() },
+  onOpenFile: () => { console.log('[App] Ctrl+O: open file (stub)') },
+  onSavePlaylist: () => { console.log('[App] Ctrl+S: save playlist (stub)') },
+  onLoadPlaylist: () => { console.log('[App] Ctrl+L: load playlist (stub)') }
+})
 
 const { isDragging } = useFileDrop(handleFilesDropped)
 
@@ -95,7 +107,7 @@ onMounted(() => {
         <TransportControls @prev="handlePrev" @next="handleNext" />
         <VolumeSlider />
       </div>
-      <ActionBar @prefs="showPreferences = !showPreferences" />
+      <ActionBar ref="actionBarRef" @prefs="showPreferences = !showPreferences" />
     </div>
     <PlaylistPanel :is-dragging="isDragging" />
     <PreferencesPanel :visible="showPreferences" @close="showPreferences = false" />

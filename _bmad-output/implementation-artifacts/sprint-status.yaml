@@ -50,8 +50,8 @@ development_status:
   1-4-controles-de-lecture-complets: done
   1-5-drag-drop-et-playlist-basique: done
   1-6-jingle-au-lancement: done
-  1-7-gestion-gracieuse-des-erreurs: review
-  1-8-accessibilite-clavier-et-lecteurs-d-ecran: backlog
+  1-7-gestion-gracieuse-des-erreurs: done
+  1-8-accessibilite-clavier-et-lecteurs-d-ecran: review
   1-9-double-mode-de-rendu-et-redimensionnement: backlog
   epic-1-retrospective: optional
 
