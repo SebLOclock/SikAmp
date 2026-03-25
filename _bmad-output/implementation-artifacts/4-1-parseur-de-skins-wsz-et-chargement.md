@@ -1,6 +1,6 @@
 # Story 4.1 : Parseur de Skins .wsz et Chargement
 
-Status: review
+Status: done
 
 ## Story
 

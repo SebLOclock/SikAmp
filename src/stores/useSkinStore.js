@@ -199,7 +199,7 @@ export const useSkinStore = defineStore('skin', {
       this.currentSkinPath = wszPath
       this.isCustomSkin = true
       this.mainBmpUrl = pendingMainBmpUrl
-      if (pendingColors) this.skinColors = pendingColors
+      this.skinColors = pendingColors || { ...DEFAULT_COLORS }
       this.isLoaded = true
       this.skinVersion++
       console.log(`[SkinStore] Skin "${skinName}" applied with ${imageCache.size} sprites`)

@@ -29,6 +29,13 @@ impl std::fmt::Display for SkinError {
 
 #[derive(Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
+pub struct SkinInfo {
+    pub name: String,
+    pub path: String,
+}
+
+#[derive(Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SkinParseResult {
     pub skin_name: String,
     pub extract_dir: String,
@@ -183,6 +190,52 @@ pub fn load_saved_skin(wsz_path: String) -> Result<Option<SkinParseResult>, Skin
         return Ok(None);
     }
     parse_skin(wsz_path).map(Some)
+}
+
+/// List all .wsz skin files in a given directory.
+/// Returns a Vec of SkinInfo with name (filename without extension) and path.
+/// If the directory doesn't exist, returns an empty list.
+fn list_skins_in_dir(skins_dir: &Path) -> Result<Vec<SkinInfo>, SkinError> {
+    if !skins_dir.exists() {
+        return Ok(Vec::new());
+    }
+
+    let mut skins: Vec<SkinInfo> = Vec::new();
+    let entries = fs::read_dir(skins_dir).map_err(|e| SkinError::IoError(e.to_string()))?;
+
+    for entry in entries {
+        let entry = entry.map_err(|e| SkinError::IoError(e.to_string()))?;
+        let path = entry.path();
+        if let Some(ext) = path.extension() {
+            if ext.eq_ignore_ascii_case("wsz") {
+                let name = path
+                    .file_stem()
+                    .unwrap_or_default()
+                    .to_string_lossy()
+                    .to_string();
+                skins.push(SkinInfo {
+                    name,
+                    path: path.to_string_lossy().to_string(),
+                });
+            }
+        }
+    }
+
+    skins.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    Ok(skins)
+}
+
+/// List all .wsz skin files in the user's skin library directory.
+/// Tauri IPC command wrapping list_skins_in_dir.
+#[tauri::command]
+pub fn list_skins(app_handle: tauri::AppHandle) -> Result<Vec<SkinInfo>, SkinError> {
+    use tauri::Manager;
+    let app_data = app_handle
+        .path()
+        .app_data_dir()
+        .map_err(|e| SkinError::IoError(e.to_string()))?;
+    let skins_dir = app_data.join("skins");
+    list_skins_in_dir(&skins_dir)
 }
 
 #[cfg(test)]
@@ -349,5 +402,61 @@ mod tests {
         assert!(result.is_some());
         let skin = result.unwrap();
         assert_eq!(skin.skin_name, "saved");
+    }
+
+    #[test]
+    fn test_list_skins_empty_dir() {
+        let tmp = tempfile::tempdir().unwrap();
+        let skins_dir = tmp.path().join("skins");
+        fs::create_dir_all(&skins_dir).unwrap();
+
+        let result = list_skins_in_dir(&skins_dir).unwrap();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_list_skins_nonexistent_dir() {
+        let tmp = tempfile::tempdir().unwrap();
+        let skins_dir = tmp.path().join("nonexistent");
+
+        let result = list_skins_in_dir(&skins_dir).unwrap();
+        assert!(result.is_empty());
+    }
+
+    #[test]
+    fn test_list_skins_with_wsz_files() {
+        let tmp = tempfile::tempdir().unwrap();
+        let skins_dir = tmp.path().join("skins");
+        fs::create_dir_all(&skins_dir).unwrap();
+
+        // Create some .wsz files (just empty files for listing purposes)
+        fs::write(skins_dir.join("Garfield.wsz"), b"fake").unwrap();
+        fs::write(skins_dir.join("Netscape.wsz"), b"fake").unwrap();
+        fs::write(skins_dir.join("Alpha.wsz"), b"fake").unwrap();
+
+        let result = list_skins_in_dir(&skins_dir).unwrap();
+        assert_eq!(result.len(), 3);
+        // Sorted alphabetically
+        assert_eq!(result[0].name, "Alpha");
+        assert_eq!(result[1].name, "Garfield");
+        assert_eq!(result[2].name, "Netscape");
+        // Paths are absolute
+        assert!(result[0].path.ends_with("Alpha.wsz"));
+    }
+
+    #[test]
+    fn test_list_skins_ignores_non_wsz() {
+        let tmp = tempfile::tempdir().unwrap();
+        let skins_dir = tmp.path().join("skins");
+        fs::create_dir_all(&skins_dir).unwrap();
+
+        fs::write(skins_dir.join("MySkin.wsz"), b"fake").unwrap();
+        fs::write(skins_dir.join("readme.txt"), b"text").unwrap();
+        fs::write(skins_dir.join("image.png"), b"png").unwrap();
+        fs::create_dir_all(skins_dir.join("subdir")).unwrap();
+
+        let result = list_skins_in_dir(&skins_dir).unwrap();
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].name, "MySkin");
     }
 }

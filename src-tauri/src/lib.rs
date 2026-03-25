@@ -17,7 +17,8 @@ pub fn run() {
             commands::playlist_commands::load_playlist,
             skin_parser::parse_skin,
             skin_parser::copy_skin_to_library,
-            skin_parser::load_saved_skin
+            skin_parser::load_saved_skin,
+            skin_parser::list_skins
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

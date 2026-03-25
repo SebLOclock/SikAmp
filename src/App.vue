@@ -16,6 +16,7 @@ import VolumeSlider from '@/components/player/VolumeSlider.vue'
 import ActionBar from '@/components/player/ActionBar.vue'
 import PlaylistPanel from '@/components/playlist/PlaylistPanel.vue'
 import PreferencesPanel from '@/components/shared/PreferencesPanel.vue'
+import SkinSelector from '@/components/skin/SkinSelector.vue'
 
 const activeOverlay = ref(null) // null | 'preferences' | 'skins'
 const actionBarRef = ref(null)
@@ -155,18 +156,11 @@ onMounted(() => {
     // Load saved skin if any
     if (preferencesStore.currentSkinPath) {
       try {
-        const { invoke } = await import('@tauri-apps/api/core')
-        const result = await invoke('load_saved_skin', { wszPath: preferencesStore.currentSkinPath })
-        if (result) {
-          await skinStore.loadSkinFromWsz(preferencesStore.currentSkinPath)
-          console.log('[App] Restored saved skin:', preferencesStore.currentSkinPath)
-        } else {
-          // .wsz file no longer exists, fallback silently
-          console.log('[App] Saved skin not found, using default')
-          preferencesStore.setSkinPath(null)
-        }
+        await skinStore.loadSkinFromWsz(preferencesStore.currentSkinPath)
+        console.log('[App] Restored saved skin:', preferencesStore.currentSkinPath)
       } catch (err) {
-        console.warn('[App] Failed to restore saved skin:', err)
+        // .wsz file no longer exists or is invalid, fallback silently
+        console.log('[App] Saved skin not found or invalid, using default:', err)
         preferencesStore.setSkinPath(null)
       }
     }
@@ -197,10 +191,11 @@ onUnmounted(() => {
         <TransportControls @prev="handlePrev" @next="handleNext" />
         <VolumeSlider />
       </div>
-      <ActionBar ref="actionBarRef" @prefs="toggleOverlay('preferences')" />
+      <ActionBar ref="actionBarRef" @prefs="toggleOverlay('preferences')" @skins="toggleOverlay('skins')" />
     </div>
     <PlaylistPanel :is-dragging="isDragging" />
     <PreferencesPanel :visible="activeOverlay === 'preferences'" @close="closeOverlay" />
+    <SkinSelector :visible="activeOverlay === 'skins'" @close="closeOverlay" />
   </main>
 </template>
 
