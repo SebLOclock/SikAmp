@@ -316,16 +316,20 @@ export const usePlaylistStore = defineStore('playlist', {
     async openFiles() {
       try {
         const { open } = await import('@tauri-apps/plugin-dialog')
-        const paths = await open({
+        const result = await open({
           filters: [{ name: 'Audio', extensions: ['mp3', 'wav', 'ogg', 'flac'] }],
           multiple: true
         })
-        if (paths && paths.length > 0) {
+        if (!result) return
+        const paths = Array.isArray(result) ? result : [result]
+        if (paths.length > 0) {
           this.addTracks(paths)
           console.log(`[PlaylistStore] Opened ${paths.length} files via dialog`)
         }
       } catch (err) {
         console.warn('[PlaylistStore] Open files dialog error:', err)
+        const playerStore = usePlayerStore()
+        playerStore.showFeedback('Erreur d\'ouverture de fichiers', 'error')
       }
     },
 
@@ -341,6 +345,8 @@ export const usePlaylistStore = defineStore('playlist', {
         }
       } catch (err) {
         console.warn('[PlaylistStore] Open folder dialog error:', err)
+        const playerStore = usePlayerStore()
+        playerStore.showFeedback('Erreur d\'ouverture du dossier', 'error')
       }
     },
 
