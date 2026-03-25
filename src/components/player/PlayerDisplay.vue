@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { usePlayerStore } from '@/stores/usePlayerStore'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
 import { useSkinStore } from '@/stores/useSkinStore'
@@ -36,16 +36,22 @@ const scrollingTitle = computed(() => {
 
 const hadFeedback = ref(false)
 
-const displayTitle = computed(() => {
-  // Feedback message replaces the scrolling title when active
-  if (playerStore.feedbackMessage) {
-    hadFeedback.value = true
-    return playerStore.feedbackMessage.text
+// Track feedback transitions to reset scroll offset without side effects in computed
+watch(
+  () => playerStore.feedbackMessage,
+  (newVal, oldVal) => {
+    if (newVal) {
+      hadFeedback.value = true
+    } else if (oldVal && hadFeedback.value) {
+      scrollOffset = 0
+      hadFeedback.value = false
+    }
   }
-  // Reset scroll offset when feedback clears to avoid visual jump
-  if (hadFeedback.value) {
-    scrollOffset = 0
-    hadFeedback.value = false
+)
+
+const displayTitle = computed(() => {
+  if (playerStore.feedbackMessage) {
+    return playerStore.feedbackMessage.text
   }
   return scrollingTitle.value
 })

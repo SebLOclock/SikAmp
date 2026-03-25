@@ -28,6 +28,14 @@
       }
     }
   },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/SebLOclock/winamp-sik/releases/latest/download/latest.json"
+      ],
+      "active": true
+    }
+  },
   "bundle": {
     "active": true,
     "targets": "all",
