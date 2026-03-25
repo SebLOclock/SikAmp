@@ -1,10 +1,7 @@
 import { defineStore } from 'pinia'
 import { invoke } from '@tauri-apps/api/core'
 import { usePlayerStore } from './usePlayerStore'
-import audioEngine from '@/engine/audioEngine'
 import { isSupportedFormat, extractFileName } from '@/utils/formatValidator.js'
-
-let endedListenerAttached = false
 
 function extractTrackInfo(filePath) {
   const fileName = filePath.split('/').pop().split('\\').pop()
@@ -42,7 +39,7 @@ export const usePlaylistStore = defineStore('playlist', {
 
   actions: {
     init() {
-      this._subscribeToEnded()
+      // Auto-advance is handled by playerStore.onEnded callback
     },
 
     addTracks(filePaths) {
@@ -115,11 +112,10 @@ export const usePlaylistStore = defineStore('playlist', {
       await playerStore.play(track.path)
       // _consecutiveErrors is reset in onLoadedMetadata (reliable success signal)
       // Async errors (corrupt/missing) handled by audioEngine.onError → _handlePlaybackError
-      this._subscribeToEnded()
       console.log('[PlaylistStore] Playing track:', track.title)
     },
 
-    _handlePlaybackError() {
+    async _handlePlaybackError() {
       this._consecutiveErrors++
 
       // Anti-infinite-loop: if we've tried all tracks, stop
@@ -135,10 +131,10 @@ export const usePlaylistStore = defineStore('playlist', {
         return
       }
 
-      this.playNext()
+      await this.playNext()
     },
 
-    playNext() {
+    async playNext() {
       if (this.tracks.length === 0) return
 
       if (this.repeatMode === 'one') {
@@ -155,6 +151,14 @@ export const usePlaylistStore = defineStore('playlist', {
           return
         }
       }
+
+      // Attempt crossfade for manual next
+      const playerStore = usePlayerStore()
+      if (playerStore.isPlaying) {
+        const crossfaded = await playerStore._handleManualCrossfadeNext()
+        if (crossfaded) return
+      }
+
       this.playTrack(nextIndex)
     },
 
@@ -178,6 +182,24 @@ export const usePlaylistStore = defineStore('playlist', {
       this.playTrack(prevIndex)
     },
 
+    peekNextTrack() {
+      if (this.tracks.length === 0 || this.currentIndex < 0) return null
+
+      if (this.repeatMode === 'one') {
+        return { track: this.tracks[this.currentIndex], index: this.currentIndex }
+      }
+
+      let nextIndex = this.currentIndex + 1
+      if (nextIndex >= this.tracks.length) {
+        if (this.repeatMode === 'all') {
+          nextIndex = 0
+        } else {
+          return null // End of playlist in 'none' mode
+        }
+      }
+      return { track: this.tracks[nextIndex], index: nextIndex }
+    },
+
     getNextTrack() {
       if (this.tracks.length === 0) return null
       const nextIndex = (this.currentIndex + 1) % this.tracks.length
@@ -190,22 +212,7 @@ export const usePlaylistStore = defineStore('playlist', {
       return this.tracks[prevIndex]
     },
 
-    _subscribeToEnded() {
-      if (endedListenerAttached) return
-      // Option B: subscribe directly to the audio element's ended event
-      // This works alongside usePlayerStore's onEnded callback (which uses the setter)
-      const checkAndAttach = () => {
-        const el = audioEngine._audioElement
-        if (el) {
-          el.addEventListener('ended', () => {
-            this._consecutiveErrors = 0 // Successful playback completed
-            this.playNext()
-          })
-          endedListenerAttached = true
-          console.log('[PlaylistStore] Subscribed to audio ended event')
-        }
-      }
-      checkAndAttach()
-    }
+    // Auto-advance is now handled by playerStore.onEnded callback
+    // which works with both dual-source audio elements
   }
 })
