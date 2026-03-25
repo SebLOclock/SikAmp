@@ -26,7 +26,7 @@ const TIME_ZONE = { x: 16, y: 36, w: 140, h: 36 }
 
 const scrollingTitle = computed(() => {
   const track = currentTrack.value
-  if (!track) return 'winamp-sik'
+  if (!track) return 'SikAmp'
   const artist = track.artist && track.artist !== 'Inconnu' ? track.artist : ''
   const title = track.title || ''
   return artist ? `${artist} \u2014 ${title}` : title

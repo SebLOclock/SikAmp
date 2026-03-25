@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SikAmp — Design Directions</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #111; color: #ccc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; }
+
+/* Navigation */
+.nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: #1a1a1a; border-bottom: 1px solid #333; padding: 12px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.nav h1 { font-size: 16px; color: #fff; margin-right: 16px; white-space: nowrap; }
+.nav-btn { padding: 6px 14px; border: 1px solid #444; background: #222; color: #aaa; border-radius: 4px; cursor: pointer; font-size: 13px; transition: all 0.2s; }
+.nav-btn:hover { background: #333; color: #fff; }
+.nav-btn.active { background: #00cc00; color: #000; border-color: #00cc00; font-weight: 600; }
+.nav-mode { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+.nav-mode label { font-size: 12px; color: #888; }
+
+/* Main content */
+.content { padding-top: 72px; }
+.direction { display: none; padding: 40px 24px; min-height: calc(100vh - 60px); }
+.direction.active { display: flex; flex-direction: column; align-items: center; }
+.direction-title { font-size: 28px; color: #fff; margin-bottom: 8px; }
+.direction-desc { font-size: 14px; color: #888; margin-bottom: 40px; text-align: center; max-width: 600px; }
+
+/* Player mockup container */
+.mockup-container { display: flex; gap: 60px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+.mockup-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; text-align: center; }
+
+/* === WINAMP PLAYER MOCKUP === */
+.player { width: 550px; user-select: none; }
+
+/* Title bar */
+.titlebar { height: 30px; display: flex; align-items: center; justify-content: space-between; padding: 0 4px; border-radius: 4px 4px 0 0; }
+.titlebar-text { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; flex: 1; padding-left: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.titlebar-buttons { display: flex; gap: 2px; }
+.titlebar-btn { width: 18px; height: 18px; border: none; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 2px; }
+
+/* Display / Visualizer area */
+.display { height: 80px; margin: 2px 4px; padding: 8px 12px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+.display-title { font-size: 14px; font-weight: 600; letter-spacing: 0.5px; white-space: nowrap; }
+.display-title.scrolling { animation: scroll-text 8s linear infinite; }
+@keyframes scroll-text { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+.display-info { display: flex; justify-content: space-between; align-items: flex-end; }
+.display-time { font-size: 28px; font-weight: 700; font-family: 'Courier New', monospace; letter-spacing: 2px; }
+.display-meta { font-size: 10px; display: flex; gap: 12px; }
+.display-meta span { opacity: 0.8; }
+
+/* Seek bar */
+.seekbar { height: 12px; margin: 2px 4px; border-radius: 2px; position: relative; overflow: hidden; }
+.seekbar-progress { height: 100%; width: 65%; border-radius: 2px; transition: width 0.3s; }
+.seekbar-thumb { position: absolute; top: -1px; width: 14px; height: 14px; border-radius: 50%; left: 63%; cursor: pointer; }
+
+/* Controls */
+.controls { height: 46px; margin: 2px 4px; display: flex; align-items: center; justify-content: space-between; padding: 0 8px; }
+.controls-main { display: flex; gap: 4px; }
+.ctrl-btn { width: 36px; height: 28px; border: none; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; border-radius: 3px; transition: all 0.15s; }
+.ctrl-btn:hover { filter: brightness(1.2); }
+.ctrl-btn.play { width: 42px; }
+.volume-container { display: flex; align-items: center; gap: 6px; }
+.volume-icon { font-size: 14px; }
+.volume-slider { width: 80px; height: 8px; border-radius: 4px; position: relative; overflow: hidden; }
+.volume-fill { height: 100%; width: 75%; border-radius: 4px; }
+
+/* Action bar */
+.actionbar { height: 30px; margin: 2px 4px; display: flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: 0 0 4px 4px; }
+.action-btn { padding: 3px 10px; border: none; font-size: 10px; cursor: pointer; border-radius: 2px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.15s; }
+.action-btn:hover { filter: brightness(1.2); }
+.action-btn.active-toggle { font-weight: 700; }
+
+/* Playlist */
+.playlist { width: 550px; margin-top: 4px; border-radius: 4px; overflow: hidden; }
+.playlist-header { height: 28px; display: flex; align-items: center; padding: 0 12px; font-size: 11px; font-weight: 600; }
+.playlist-cols { display: flex; padding: 0 12px; height: 22px; align-items: center; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+.playlist-cols .col-num { width: 30px; }
+.playlist-cols .col-title { flex: 1; }
+.playlist-cols .col-artist { width: 160px; }
+.playlist-cols .col-dur { width: 50px; text-align: right; }
+.playlist-item { display: flex; padding: 0 12px; height: 24px; align-items: center; font-size: 12px; cursor: pointer; transition: background 0.1s; }
+.playlist-item .col-num { width: 30px; font-size: 10px; }
+.playlist-item .col-title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.playlist-item .col-artist { width: 160px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; }
+.playlist-item .col-dur { width: 50px; text-align: right; font-size: 11px; font-family: 'Courier New', monospace; }
+.playlist-status { height: 24px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; font-size: 10px; }
+
+/* Onboarding overlay */
+.onboarding { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 8px; font-size: 14px; opacity: 0.6; pointer-events: none; }
+.onboarding-icon { font-size: 32px; }
+
+/* ============================
+   THEME: 1 - Classic Faithful
+   ============================ */
+.theme-classic .titlebar { background: linear-gradient(180deg, #4a4a52 0%, #35353b 50%, #2a2a30 100%); }
+.theme-classic .titlebar-text { color: #fff; }
+.theme-classic .titlebar-btn { background: #3a3a40; color: #aaa; }
+.theme-classic .titlebar-btn:hover { background: #555; color: #fff; }
+.theme-classic .display { background: #000; border: 2px inset #1a1a20; }
+.theme-classic .display-title { color: #00ff00; }
+.theme-classic .display-time { color: #00ff00; }
+.theme-classic .display-meta span { color: #00cc00; }
+.theme-classic .seekbar { background: #1a1a20; border: 1px inset #333; }
+.theme-classic .seekbar-progress { background: linear-gradient(90deg, #006600, #00cc00); }
+.theme-classic .seekbar-thumb { background: #00ff00; border: 2px solid #009900; }
+.theme-classic .controls { background: linear-gradient(180deg, #3a3a40 0%, #2a2a30 100%); }
+.theme-classic .ctrl-btn { background: linear-gradient(180deg, #555 0%, #3a3a40 100%); color: #ddd; border: 1px outset #555; }
+.theme-classic .ctrl-btn:active { border-style: inset; }
+.theme-classic .volume-icon { color: #00cc00; }
+.theme-classic .volume-slider { background: #1a1a20; border: 1px inset #333; }
+.theme-classic .volume-fill { background: linear-gradient(90deg, #006600, #00cc00); }
+.theme-classic .actionbar { background: linear-gradient(180deg, #2a2a30 0%, #222228 100%); }
+.theme-classic .action-btn { background: #333; color: #aaa; }
+.theme-classic .action-btn:hover { color: #00ff00; }
+.theme-classic .action-btn.active-toggle { color: #00ff00; background: #1a3a1a; }
+.theme-classic .playlist { background: #000; border: 2px inset #333; }
+.theme-classic .playlist-header { background: linear-gradient(180deg, #3a3a40, #2a2a30); color: #ccc; }
+.theme-classic .playlist-cols { color: #00aa00; }
+.theme-classic .playlist-item { color: #00ff00; }
+.theme-classic .playlist-item:hover { background: #0a1a0a; }
+.theme-classic .playlist-item.active { color: #ffffff; background: #003300; }
+.theme-classic .playlist-status { color: #009900; background: #0a0a0a; }
+
+/* ============================
+   THEME: 2 - Dark Neon
+   ============================ */
+.theme-neon .titlebar { background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%); border-bottom: 1px solid #00ffcc33; }
+.theme-neon .titlebar-text { color: #00ffcc; }
+.theme-neon .titlebar-btn { background: #222240; color: #00ffcc88; }
+.theme-neon .titlebar-btn:hover { color: #00ffcc; box-shadow: 0 0 6px #00ffcc44; }
+.theme-neon .display { background: #0a0a1a; border: 1px solid #00ffcc33; box-shadow: inset 0 0 20px #00ffcc0a; }
+.theme-neon .display-title { color: #00ffcc; text-shadow: 0 0 8px #00ffcc66; }
+.theme-neon .display-time { color: #ff00ff; text-shadow: 0 0 10px #ff00ff44; }
+.theme-neon .display-meta span { color: #00ccaa; }
+.theme-neon .seekbar { background: #1a1a2e; }
+.theme-neon .seekbar-progress { background: linear-gradient(90deg, #00ffcc, #ff00ff); box-shadow: 0 0 8px #00ffcc44; }
+.theme-neon .seekbar-thumb { background: #fff; box-shadow: 0 0 8px #00ffcc; }
+.theme-neon .controls { background: #12122a; }
+.theme-neon .ctrl-btn { background: #1a1a35; color: #00ffcc; border: 1px solid #00ffcc33; }
+.theme-neon .ctrl-btn:hover { box-shadow: 0 0 8px #00ffcc44; border-color: #00ffcc; }
+.theme-neon .volume-icon { color: #ff00ff; }
+.theme-neon .volume-slider { background: #1a1a2e; }
+.theme-neon .volume-fill { background: linear-gradient(90deg, #ff00ff88, #ff00ff); box-shadow: 0 0 6px #ff00ff44; }
+.theme-neon .actionbar { background: #0e0e24; }
+.theme-neon .action-btn { background: #1a1a35; color: #00ccaa88; border: 1px solid transparent; }
+.theme-neon .action-btn:hover { color: #00ffcc; border-color: #00ffcc44; }
+.theme-neon .action-btn.active-toggle { color: #ff00ff; border-color: #ff00ff44; box-shadow: 0 0 6px #ff00ff22; }
+.theme-neon .playlist { background: #0a0a1a; border: 1px solid #00ffcc22; }
+.theme-neon .playlist-header { background: #12122a; color: #00ffcc; }
+.theme-neon .playlist-cols { color: #00ccaa88; border-color: #00ffcc22; }
+.theme-neon .playlist-item { color: #00ccaa; }
+.theme-neon .playlist-item:hover { background: #00ffcc0a; }
+.theme-neon .playlist-item.active { color: #ff00ff; background: #ff00ff11; }
+.theme-neon .playlist-status { color: #00ccaa66; background: #08081a; }
+
+/* ============================
+   THEME: 3 - Warm Retro
+   ============================ */
+.theme-warm .titlebar { background: linear-gradient(180deg, #4a3a2a 0%, #3a2a1a 100%); }
+.theme-warm .titlebar-text { color: #ffcc66; }
+.theme-warm .titlebar-btn { background: #3a2a1a; color: #cc9944; }
+.theme-warm .titlebar-btn:hover { color: #ffcc66; }
+.theme-warm .display { background: #1a0e00; border: 2px inset #3a2a1a; }
+.theme-warm .display-title { color: #ff9900; text-shadow: 0 0 4px #ff990033; }
+.theme-warm .display-time { color: #ffcc00; }
+.theme-warm .display-meta span { color: #cc8800; }
+.theme-warm .seekbar { background: #2a1a0a; }
+.theme-warm .seekbar-progress { background: linear-gradient(90deg, #cc6600, #ff9900); }
+.theme-warm .seekbar-thumb { background: #ffcc00; border: 2px solid #cc8800; }
+.theme-warm .controls { background: linear-gradient(180deg, #3a2a1a, #2a1a0a); }
+.theme-warm .ctrl-btn { background: linear-gradient(180deg, #4a3a2a, #3a2a1a); color: #ffcc66; border: 1px outset #4a3a2a; }
+.theme-warm .volume-icon { color: #ff9900; }
+.theme-warm .volume-slider { background: #2a1a0a; }
+.theme-warm .volume-fill { background: linear-gradient(90deg, #cc6600, #ff9900); }
+.theme-warm .actionbar { background: #2a1a0a; }
+.theme-warm .action-btn { background: #3a2a1a; color: #cc8844; }
+.theme-warm .action-btn:hover { color: #ffcc66; }
+.theme-warm .action-btn.active-toggle { color: #ff9900; background: #3a2a0a; }
+.theme-warm .playlist { background: #1a0e00; border: 2px inset #3a2a1a; }
+.theme-warm .playlist-header { background: linear-gradient(180deg, #3a2a1a, #2a1a0a); color: #cc9944; }
+.theme-warm .playlist-cols { color: #cc880088; border-color: #3a2a1a; }
+.theme-warm .playlist-item { color: #ff9900; }
+.theme-warm .playlist-item:hover { background: #ff990008; }
+.theme-warm .playlist-item.active { color: #ffcc00; background: #3a2200; }
+.theme-warm .playlist-status { color: #88660088; background: #120a00; }
+
+/* ============================
+   THEME: 4 - Minimal Steel
+   ============================ */
+.theme-steel .titlebar { background: #2c2c30; }
+.theme-steel .titlebar-text { color: #e0e0e0; }
+.theme-steel .titlebar-btn { background: #3a3a3e; color: #888; }
+.theme-steel .titlebar-btn:hover { color: #fff; }
+.theme-steel .display { background: #1a1a1c; border: 1px solid #333; }
+.theme-steel .display-title { color: #e0e0e0; }
+.theme-steel .display-time { color: #fff; }
+.theme-steel .display-meta span { color: #888; }
+.theme-steel .seekbar { background: #252528; }
+.theme-steel .seekbar-progress { background: #5588cc; }
+.theme-steel .seekbar-thumb { background: #fff; border: 2px solid #5588cc; }
+.theme-steel .controls { background: #242428; }
+.theme-steel .ctrl-btn { background: #333338; color: #ccc; border: 1px solid #3a3a3e; }
+.theme-steel .ctrl-btn:hover { background: #3a3a40; color: #fff; }
+.theme-steel .volume-icon { color: #5588cc; }
+.theme-steel .volume-slider { background: #252528; }
+.theme-steel .volume-fill { background: #5588cc; }
+.theme-steel .actionbar { background: #222226; }
+.theme-steel .action-btn { background: #2a2a2e; color: #888; border: 1px solid #333; }
+.theme-steel .action-btn:hover { color: #ccc; border-color: #555; }
+.theme-steel .action-btn.active-toggle { color: #5588cc; border-color: #5588cc; }
+.theme-steel .playlist { background: #1a1a1c; border: 1px solid #333; }
+.theme-steel .playlist-header { background: #2c2c30; color: #ccc; }
+.theme-steel .playlist-cols { color: #666; border-color: #2a2a2e; }
+.theme-steel .playlist-item { color: #bbb; }
+.theme-steel .playlist-item:hover { background: #ffffff08; }
+.theme-steel .playlist-item.active { color: #fff; background: #5588cc22; }
+.theme-steel .playlist-status { color: #666; background: #161618; }
+
+/* ============================
+   THEME: 5 - Y2K Revival
+   ============================ */
+.theme-y2k .titlebar { background: linear-gradient(180deg, #6633cc 0%, #4422aa 100%); }
+.theme-y2k .titlebar-text { color: #ffcc00; }
+.theme-y2k .titlebar-btn { background: #5522bb; color: #ffcc0088; }
+.theme-y2k .titlebar-btn:hover { color: #ffcc00; }
+.theme-y2k .display { background: linear-gradient(135deg, #1a0033 0%, #0a001a 100%); border: 2px solid #6633cc55; }
+.theme-y2k .display-title { color: #ffcc00; text-shadow: 0 0 6px #ffcc0044; }
+.theme-y2k .display-time { color: #ff6699; text-shadow: 0 0 8px #ff669944; }
+.theme-y2k .display-meta span { color: #cc99ff; }
+.theme-y2k .seekbar { background: #1a0033; }
+.theme-y2k .seekbar-progress { background: linear-gradient(90deg, #ff6699, #ffcc00); }
+.theme-y2k .seekbar-thumb { background: #ffcc00; box-shadow: 0 0 6px #ffcc0066; }
+.theme-y2k .controls { background: linear-gradient(180deg, #2a1155, #1a0033); }
+.theme-y2k .ctrl-btn { background: linear-gradient(180deg, #5522bb, #4422aa); color: #ffcc00; border: 1px solid #6633cc; }
+.theme-y2k .ctrl-btn:hover { box-shadow: 0 0 8px #ffcc0044; }
+.theme-y2k .volume-icon { color: #ff6699; }
+.theme-y2k .volume-slider { background: #1a0033; }
+.theme-y2k .volume-fill { background: linear-gradient(90deg, #ff6699, #ff99bb); }
+.theme-y2k .actionbar { background: #150028; }
+.theme-y2k .action-btn { background: #2a1155; color: #cc99ff; }
+.theme-y2k .action-btn:hover { color: #ffcc00; }
+.theme-y2k .action-btn.active-toggle { color: #ff6699; background: #3a1155; }
+.theme-y2k .playlist { background: #0a001a; border: 2px solid #6633cc33; }
+.theme-y2k .playlist-header { background: linear-gradient(180deg, #2a1155, #1a0033); color: #cc99ff; }
+.theme-y2k .playlist-cols { color: #9966cc; border-color: #6633cc33; }
+.theme-y2k .playlist-item { color: #cc99ff; }
+.theme-y2k .playlist-item:hover { background: #6633cc11; }
+.theme-y2k .playlist-item.active { color: #ffcc00; background: #6633cc22; }
+.theme-y2k .playlist-status { color: #6633cc88; background: #08001a; }
+
+/* ============================
+   THEME: 6 - Midnight Mode
+   ============================ */
+.theme-midnight .titlebar { background: #0d0d0f; border-bottom: 1px solid #222; }
+.theme-midnight .titlebar-text { color: #ccc; }
+.theme-midnight .titlebar-btn { background: #1a1a1e; color: #555; }
+.theme-midnight .titlebar-btn:hover { color: #aaa; }
+.theme-midnight .display { background: #050507; border: 1px solid #1a1a1e; }
+.theme-midnight .display-title { color: #ffffff; }
+.theme-midnight .display-time { color: #ffffff; }
+.theme-midnight .display-meta span { color: #555; }
+.theme-midnight .seekbar { background: #0a0a0e; }
+.theme-midnight .seekbar-progress { background: #ffffff; }
+.theme-midnight .seekbar-thumb { background: #fff; }
+.theme-midnight .controls { background: #0a0a0e; }
+.theme-midnight .ctrl-btn { background: #151518; color: #888; border: 1px solid #222; }
+.theme-midnight .ctrl-btn:hover { color: #fff; border-color: #444; }
+.theme-midnight .volume-icon { color: #666; }
+.theme-midnight .volume-slider { background: #0a0a0e; }
+.theme-midnight .volume-fill { background: #fff; }
+.theme-midnight .actionbar { background: #080808; }
+.theme-midnight .action-btn { background: #111114; color: #555; border: 1px solid #1a1a1e; }
+.theme-midnight .action-btn:hover { color: #aaa; }
+.theme-midnight .action-btn.active-toggle { color: #fff; }
+.theme-midnight .playlist { background: #050507; border: 1px solid #1a1a1e; }
+.theme-midnight .playlist-header { background: #0d0d0f; color: #888; }
+.theme-midnight .playlist-cols { color: #444; border-color: #1a1a1e; }
+.theme-midnight .playlist-item { color: #777; }
+.theme-midnight .playlist-item:hover { background: #ffffff06; }
+.theme-midnight .playlist-item.active { color: #fff; background: #ffffff0a; }
+.theme-midnight .playlist-status { color: #333; background: #040406; }
+
+/* Comparison view */
+.comparison { display: none; padding: 40px 24px; padding-top: 80px; }
+.comparison.active { display: block; }
+.comparison-title { font-size: 24px; color: #fff; text-align: center; margin-bottom: 32px; }
+.comparison-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1400px; margin: 0 auto; }
+.comparison-card { cursor: pointer; transition: transform 0.2s; border-radius: 8px; overflow: hidden; padding: 16px; background: #1a1a1e; }
+.comparison-card:hover { transform: scale(1.02); }
+.comparison-card h3 { font-size: 14px; color: #fff; margin-bottom: 8px; }
+.comparison-card .mini-player { transform: scale(0.55); transform-origin: top left; width: 550px; pointer-events: none; }
+.comparison-card-wrap { height: 200px; overflow: hidden; }
+
+/* Responsive */
+@media (max-width: 1200px) { .comparison-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 700px) { .comparison-grid { grid-template-columns: 1fr; } .player, .playlist { width: 100%; } }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <h1>SikAmp — Design Directions</h1>
+  <button class="nav-btn active" onclick="showDirection(0)">1. Classic Faithful</button>
+  <button class="nav-btn" onclick="showDirection(1)">2. Dark Neon</button>
+  <button class="nav-btn" onclick="showDirection(2)">3. Warm Retro</button>
+  <button class="nav-btn" onclick="showDirection(3)">4. Minimal Steel</button>
+  <button class="nav-btn" onclick="showDirection(4)">5. Y2K Revival</button>
+  <button class="nav-btn" onclick="showDirection(5)">6. Midnight Mode</button>
+  <button class="nav-btn" onclick="showComparison()" style="border-color: #666;">Comparaison</button>
+</nav>
+
+<div class="content" id="content">
+
+  <!-- Direction 1: Classic Faithful -->
+  <div class="direction active" id="dir-0">
+    <h2 class="direction-title">1. Classic Faithful</h2>
+    <p class="direction-desc">Reproduction fidele de l'esthetique Winamp 2.x. Fond gris metallique, texte vert lumineux, bordures en relief. La reference nostalgique absolue — Marina se sent instantanement chez elle.</p>
+    <div class="mockup-container">
+      <div>
+        <div class="mockup-label">Fenetre principale</div>
+        <div class="player theme-classic" id="player-classic"></div>
+        <div class="mockup-label" style="margin-top: 16px;">Playlist</div>
+        <div class="playlist theme-classic" id="playlist-classic"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direction 2: Dark Neon -->
+  <div class="direction" id="dir-1">
+    <h2 class="direction-title">2. Dark Neon</h2>
+    <p class="direction-desc">Atmosphere cyberpunk avec des accents neon cyan et magenta. Plus moderne, plus electrique. Leo adore — c'est exactement l'aesthetic qu'il partagerait sur Discord.</p>
+    <div class="mockup-container">
+      <div>
+        <div class="mockup-label">Fenetre principale</div>
+        <div class="player theme-neon" id="player-neon"></div>
+        <div class="mockup-label" style="margin-top: 16px;">Playlist</div>
+        <div class="playlist theme-neon" id="playlist-neon"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direction 3: Warm Retro -->
+  <div class="direction" id="dir-2">
+    <h2 class="direction-title">3. Warm Retro</h2>
+    <p class="direction-desc">Palette chaude ambre/orange au lieu du vert classique. Ambiance plus chaleureuse, comme une lampe a lave et un ecran CRT dans une chambre d'ado des annees 2000.</p>
+    <div class="mockup-container">
+      <div>
+        <div class="mockup-label">Fenetre principale</div>
+        <div class="player theme-warm" id="player-warm"></div>
+        <div class="mockup-label" style="margin-top: 16px;">Playlist</div>
+        <div class="playlist theme-warm" id="playlist-warm"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direction 4: Minimal Steel -->
+  <div class="direction" id="dir-3">
+    <h2 class="direction-title">4. Minimal Steel</h2>
+    <p class="direction-desc">Version epuree et moderne du metallique. Surfaces plates, pas de textures lourdes. La structure Winamp, l'elegance contemporaine. Accents bleu acier subtils.</p>
+    <div class="mockup-container">
+      <div>
+        <div class="mockup-label">Fenetre principale</div>
+        <div class="player theme-steel" id="player-steel"></div>
+        <div class="mockup-label" style="margin-top: 16px;">Playlist</div>
+        <div class="playlist theme-steel" id="playlist-steel"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direction 5: Y2K Revival -->
+  <div class="direction" id="dir-4">
+    <h2 class="direction-title">5. Y2K Revival</h2>
+    <p class="direction-desc">Couleurs vives, gradients audacieux, esprit annees 2000 maximal. Violet profond, jaune vif, rose neon. L'esthetique Y2K dans toute sa splendeur — screenshot-worthy a 100%.</p>
+    <div class="mockup-container">
+      <div>
+        <div class="mockup-label">Fenetre principale</div>
+        <div class="player theme-y2k" id="player-y2k"></div>
+        <div class="mockup-label" style="margin-top: 16px;">Playlist</div>
+        <div class="playlist theme-y2k" id="playlist-y2k"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Direction 6: Midnight Mode -->
+  <div class="direction" id="dir-5">
+    <h2 class="direction-title">6. Midnight Mode</h2>
+    <p class="direction-desc">Ultra-sombre, minimaliste, contraste eleve blanc sur noir presque pur. Le player s'efface visuellement — seul le contenu compte. Ideal pour le mode moderne fluide.</p>
+    <div class="mockup-container">
+      <div>
+        <div class="mockup-label">Fenetre principale</div>
+        <div class="player theme-midnight" id="player-midnight"></div>
+        <div class="mockup-label" style="margin-top: 16px;">Playlist</div>
+        <div class="playlist theme-midnight" id="playlist-midnight"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparison view -->
+  <div class="comparison" id="comparison">
+    <h2 class="comparison-title">Comparaison des 6 directions</h2>
+    <div class="comparison-grid" id="comparison-grid"></div>
+  </div>
+</div>
+
+<script>
+const themes = ['classic', 'neon', 'warm', 'steel', 'y2k', 'midnight'];
+const themeNames = ['Classic Faithful', 'Dark Neon', 'Warm Retro', 'Minimal Steel', 'Y2K Revival', 'Midnight Mode'];
+const themeClasses = ['theme-classic', 'theme-neon', 'theme-warm', 'theme-steel', 'theme-y2k', 'theme-midnight'];
+
+const playlist = [
+  { num: 1, title: 'Bring Me To Life', artist: 'Evanescence', dur: '3:58' },
+  { num: 2, title: 'Toxic', artist: 'Britney Spears', dur: '3:31' },
+  { num: 3, title: 'Eyes On Me', artist: 'Faye Wong', dur: '5:38', active: true },
+  { num: 4, title: 'Harder Better Faster Stronger', artist: 'Daft Punk', dur: '3:44' },
+  { num: 5, title: 'Numb', artist: 'Linkin Park', dur: '3:07' },
+  { num: 6, title: 'A Cruel Angel\'s Thesis', artist: 'Yoko Takahashi', dur: '4:05' },
+  { num: 7, title: 'Blue (Da Ba Dee)', artist: 'Eiffel 65', dur: '3:40' },
+  { num: 8, title: 'My Immortal', artist: 'Evanescence', dur: '4:33' },
+];
+
+function renderPlayer(container) {
+  container.innerHTML = `
+    <div class="titlebar">
+      <span class="titlebar-text">SikAmp — 3. Eyes On Me - Faye Wong</span>
+      <div class="titlebar-buttons">
+        <button class="titlebar-btn">—</button>
+        <button class="titlebar-btn">×</button>
+      </div>
+    </div>
+    <div class="display">
+      <div class="display-title scrolling">Faye Wong — Eyes On Me (Final Fantasy VIII OST)</div>
+      <div class="display-info">
+        <div class="display-time">3:27</div>
+        <div class="display-meta">
+          <span>192 kbps</span>
+          <span>44.1 kHz</span>
+          <span>stereo</span>
+          <span>MP3</span>
+        </div>
+      </div>
+    </div>
+    <div class="seekbar">
+      <div class="seekbar-progress"></div>
+      <div class="seekbar-thumb"></div>
+    </div>
+    <div class="controls">
+      <div class="controls-main">
+        <button class="ctrl-btn">⏮</button>
+        <button class="ctrl-btn play">⏸</button>
+        <button class="ctrl-btn">⏹</button>
+        <button class="ctrl-btn">⏭</button>
+      </div>
+      <div class="volume-container">
+        <span class="volume-icon">🔊</span>
+        <div class="volume-slider">
+          <div class="volume-fill"></div>
+        </div>
+      </div>
+    </div>
+    <div class="actionbar">
+      <button class="action-btn">Shuffle</button>
+      <button class="action-btn">Repeat</button>
+      <button class="action-btn active-toggle">Crossfade</button>
+      <button class="action-btn">Skins</button>
+      <button class="action-btn">Prefs</button>
+    </div>
+  `;
+}
+
+function renderPlaylist(container) {
+  let items = playlist.map(t => `
+    <div class="playlist-item ${t.active ? 'active' : ''}">
+      <span class="col-num">${t.num}.</span>
+      <span class="col-title">${t.title}</span>
+      <span class="col-artist">${t.artist}</span>
+      <span class="col-dur">${t.dur}</span>
+    </div>
+  `).join('');
+
+  container.innerHTML = `
+    <div class="playlist-header">Playlist — 2003 vibes</div>
+    <div class="playlist-cols">
+      <span class="col-num">#</span>
+      <span class="col-title">Titre</span>
+      <span class="col-artist">Artiste</span>
+      <span class="col-dur">Duree</span>
+    </div>
+    ${items}
+    <div class="playlist-status">
+      <span>8 morceaux — 32:16</span>
+      <span>Crossfade: 4s</span>
+    </div>
+  `;
+}
+
+// Initialize all players
+themes.forEach(theme => {
+  const playerEl = document.getElementById('player-' + theme);
+  const playlistEl = document.getElementById('playlist-' + theme);
+  if (playerEl) renderPlayer(playerEl);
+  if (playlistEl) renderPlaylist(playlistEl);
+});
+
+// Build comparison grid
+const compGrid = document.getElementById('comparison-grid');
+themes.forEach((theme, i) => {
+  const card = document.createElement('div');
+  card.className = 'comparison-card';
+  card.onclick = () => showDirection(i);
+  card.innerHTML = `
+    <h3>${i+1}. ${themeNames[i]}</h3>
+    <div class="comparison-card-wrap">
+      <div class="mini-player">
+        <div class="player ${themeClasses[i]}" id="mini-player-${theme}"></div>
+        <div class="playlist ${themeClasses[i]}" id="mini-playlist-${theme}" style="margin-top:4px;"></div>
+      </div>
+    </div>
+  `;
+  compGrid.appendChild(card);
+});
+
+// Render mini players
+themes.forEach(theme => {
+  const mp = document.getElementById('mini-player-' + theme);
+  const mpl = document.getElementById('mini-playlist-' + theme);
+  if (mp) renderPlayer(mp);
+  if (mpl) renderPlaylist(mpl);
+});
+
+// Navigation
+function showDirection(index) {
+  document.querySelectorAll('.direction').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('comparison').classList.remove('active');
+  document.getElementById('dir-' + index).classList.add('active');
+  document.querySelectorAll('.nav-btn')[index].classList.add('active');
+}
+
+function showComparison() {
+  document.querySelectorAll('.direction').forEach(d => d.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('comparison').classList.add('active');
+  document.querySelectorAll('.nav-btn')[6].classList.add('active');
+}
+</script>
+</body>
+</html>

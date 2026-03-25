@@ -6,11 +6,11 @@ Status: review
 
 As a utilisateur en situation de handicap,
 I want naviguer et contrôler le player entièrement au clavier et avec un lecteur d'écran,
-So that je puisse profiter de winamp-sik quelle que soit ma situation.
+So that je puisse profiter de SikAmp quelle que soit ma situation.
 
 ## Contexte Business
 
-L'accessibilité est un engagement éthique du projet dès la V1. Le PRD positionne winamp-sik comme **faisant mieux que Winamp** sur l'accessibilité. Les exigences FR33-FR35, NFR9-NFR12 et la spec UX (section "Stratégie d'Accessibilité") définissent le périmètre V1 : navigation clavier complète, labels ARIA en français, compatibilité VoiceOver (macOS) et NVDA (Windows).
+L'accessibilité est un engagement éthique du projet dès la V1. Le PRD positionne SikAmp comme **faisant mieux que Winamp** sur l'accessibilité. Les exigences FR33-FR35, NFR9-NFR12 et la spec UX (section "Stratégie d'Accessibilité") définissent le périmètre V1 : navigation clavier complète, labels ARIA en français, compatibilité VoiceOver (macOS) et NVDA (Windows).
 
 - **FR33** : L'utilisateur peut naviguer et contrôler toutes les fonctions du player au clavier
 - **FR34** : Le système expose les contrôles aux technologies d'assistance (lecteurs d'écran)

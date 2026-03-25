@@ -1,4 +1,4 @@
-// [SkinRenderer] Canvas 2D rendering engine for Winamp-sik skins
+// [SkinRenderer] Canvas 2D rendering engine for SikAmp skins
 // Modern resolution rendering with classic Winamp aesthetic
 // Uses devicePixelRatio for crisp HiDPI rendering
 

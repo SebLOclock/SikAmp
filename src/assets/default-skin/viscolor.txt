@@ -1,4 +1,4 @@
-# Winamp-sik Classic Faithful Color Palette
+# SikAmp Classic Faithful Color Palette
 # Format: R,G,B (0-255) - one color per line
 # Based on classic Winamp aesthetic
 #

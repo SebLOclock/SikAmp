@@ -6,7 +6,7 @@ Status: done
 
 As a utilisateur,
 I want lire un fichier audio depuis mon disque,
-So that je puisse ecouter ma musique dans winamp-sik.
+So that je puisse ecouter ma musique dans SikAmp.
 
 ## Acceptance Criteria (BDD)
 
@@ -297,7 +297,7 @@ Le composant `PlayerDebug.vue` est TEMPORAIRE. Il sera remplace par les vrais co
 - **Pinia** : v3.0.4 installe et configure dans `main.js`
 - **lib.rs** : declare `mod commands; mod skin_parser; mod file_manager;` — les modules existent deja
 - **Convention validee** : code en anglais, UI en francais, stores en camelCase, commandes Tauri en snake_case
-- **tauri.conf.json** : fenetre "winamp-sik" 800x600, min 800x400, redimensionnable
+- **tauri.conf.json** : fenetre "SikAmp" 800x600, min 800x400, redimensionnable
 - **constants.js** : contient deja `DEFAULT_VOLUME = 0.8`, `SUPPORTED_AUDIO_FORMATS`, `MAX_CROSSFADE_DURATION`
 
 ## Dev Agent Record

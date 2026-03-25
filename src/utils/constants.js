@@ -1,5 +1,5 @@
 // Application constants
-export const APP_NAME = 'winamp-sik'
+export const APP_NAME = 'SikAmp'
 
 // Audio defaults
 export const MAX_CROSSFADE_DURATION = 12
