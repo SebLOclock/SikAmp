@@ -91,9 +91,13 @@ function handleKeyDown(event) {
     return
   }
 
-  // Shift+F10 or ContextMenu key: open context menu
+  // Shift+F10 or ContextMenu key: toggle context menu
   if ((key === 'F10' && event.shiftKey) || key === 'ContextMenu') {
     event.preventDefault()
+    if (contextMenu.value.visible) {
+      handleContextMenuClose()
+      return
+    }
     const focusedEl = focusedIndex.value >= 0
       ? document.getElementById(`playlist-item-${focusedIndex.value}`)
       : null
@@ -225,10 +229,15 @@ const contextMenuItems = computed(() => [
   { label: 'Retirer tout', action: 'remove-all', disabled: playlistStore.isEmpty }
 ])
 
+function parseTrackIndex(id) {
+  const parsed = parseInt(id?.replace('playlist-item-', ''), 10)
+  return Number.isNaN(parsed) ? -1 : parsed
+}
+
 function handleContextMenu(event) {
   event.preventDefault()
   const trackEl = event.target.closest('.playlist-track')
-  const targetIndex = trackEl ? parseInt(trackEl.id.replace('playlist-item-', '')) : -1
+  const targetIndex = trackEl ? parseTrackIndex(trackEl.id) : -1
   contextMenu.value = { visible: true, x: event.clientX, y: event.clientY, targetIndex }
   ariaAnnouncement.value = 'Menu contextuel ouvert'
 }
@@ -269,7 +278,7 @@ function handleContextMenuClose() {
 function openContextMenuAtElement(el) {
   if (el) {
     const rect = el.getBoundingClientRect()
-    const targetIndex = el.id ? parseInt(el.id.replace('playlist-item-', '')) : -1
+    const targetIndex = el.id ? parseTrackIndex(el.id) : -1
     contextMenu.value = { visible: true, x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, targetIndex }
   } else {
     // No focused track — open at center of playlist

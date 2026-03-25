@@ -27,25 +27,27 @@ function getActionableItems() {
 function getMenuStyle() {
   if (!props.visible) return { display: 'none' }
 
-  let left = props.x
-  let top = props.y
-
-  // Clamp to viewport (estimated menu size: 220x300 max)
-  const menuWidth = 220
-  const menuHeight = props.items.length * 28 + 8
-  if (left + menuWidth > window.innerWidth) {
-    left = window.innerWidth - menuWidth
-  }
-  if (top + menuHeight > window.innerHeight) {
-    top = Math.max(0, top - menuHeight)
-  }
-
   return {
     position: 'fixed',
-    left: `${left}px`,
-    top: `${top}px`,
+    left: `${props.x}px`,
+    top: `${props.y}px`,
     zIndex: 1000
   }
+}
+
+function clampToViewport() {
+  if (!menuRef.value) return
+  const rect = menuRef.value.getBoundingClientRect()
+  let left = props.x
+  let top = props.y
+  if (left + rect.width > window.innerWidth) {
+    left = window.innerWidth - rect.width
+  }
+  if (top + rect.height > window.innerHeight) {
+    top = Math.max(0, top - rect.height)
+  }
+  menuRef.value.style.left = `${left}px`
+  menuRef.value.style.top = `${top}px`
 }
 
 function handleItemClick(item) {
@@ -115,6 +117,7 @@ watch(() => props.visible, async (visible) => {
 
     await nextTick()
     if (menuRef.value) {
+      clampToViewport()
       activateTrap(menuRef.value)
       focusItem(focusedItemIndex.value)
     }

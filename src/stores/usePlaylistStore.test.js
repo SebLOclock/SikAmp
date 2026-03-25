@@ -606,6 +606,8 @@ describe('usePlaylistStore', () => {
   })
 
   describe('openFiles', () => {
+    beforeEach(() => { vi.resetModules() })
+
     it('adds selected files to the playlist', async () => {
       vi.doMock('@tauri-apps/plugin-dialog', () => ({
         open: vi.fn().mockResolvedValue(['/music/song1.mp3', '/music/song2.flac'])
@@ -642,6 +644,8 @@ describe('usePlaylistStore', () => {
   })
 
   describe('openFolder', () => {
+    beforeEach(() => { vi.resetModules() })
+
     it('scans folder and adds resolved audio files', async () => {
       vi.doMock('@tauri-apps/plugin-dialog', () => ({
         open: vi.fn().mockResolvedValue('/music/albums')
