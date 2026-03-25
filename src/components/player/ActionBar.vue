@@ -105,7 +105,7 @@ function handleMouseLeave() {
   draw()
 }
 
-const emit = defineEmits(['prefs'])
+const emit = defineEmits(['prefs', 'skins'])
 
 function executeAction(btnId) {
   const btn = BUTTONS.find(b => b.id === btnId)
@@ -119,8 +119,8 @@ function executeAction(btnId) {
     console.log(`[ActionBar] ${btnId} toggled:`, btnId === 'crossfade' ? preferencesStore.crossfadeEnabled : toggleState.value[btnId])
   } else if (btnId === 'prefs') {
     emit('prefs')
-  } else {
-    console.log(`[ActionBar] ${btnId} clicked (stub)`)
+  } else if (btnId === 'skins') {
+    emit('skins')
   }
 }
 
