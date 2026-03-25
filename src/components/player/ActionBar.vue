@@ -173,10 +173,7 @@ watch(
             ? 'Répétition'
             : 'Fondu enchaîné'
       "
-      @click="
-        executeAction(btn.id)
-        draw()
-      "
+      @click="(executeAction(btn.id), draw())"
     />
     <button
       v-for="btn in BUTTONS.filter((b) => !b.toggle)"
