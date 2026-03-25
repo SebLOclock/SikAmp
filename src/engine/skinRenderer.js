@@ -93,7 +93,15 @@ export function drawSlider(ctx, x, y, width, height, value, min, max) {
   // Track fill (green bar)
   if (fillWidth > 0) {
     ctx.fillStyle = SKIN_COLORS.textPrimary
+    if (ctx.imageSmoothingEnabled) {
+      ctx.shadowColor = SKIN_COLORS.textPrimary
+      ctx.shadowBlur = 6
+    }
     ctx.fillRect(x + 1, y + 1, Math.max(0, fillWidth - 2), height - 2)
+    if (ctx.imageSmoothingEnabled) {
+      ctx.shadowBlur = 0
+      ctx.shadowColor = 'transparent'
+    }
   }
 
   // Thumb
@@ -112,7 +120,17 @@ export function drawBitmapText(ctx, text, x, y, fontSize = 12, _legacy = undefin
   ctx.font = `bold ${fontSize}px "Courier New", "Consolas", monospace`
   ctx.textBaseline = 'top'
   ctx.textAlign = 'left'
-  ctx.fillText(text, x, y)
+
+  // Modern mode: subtle glow effect on text
+  if (ctx.imageSmoothingEnabled) {
+    ctx.shadowColor = color
+    ctx.shadowBlur = 4
+    ctx.fillText(text, x, y)
+    ctx.shadowBlur = 0
+    ctx.shadowColor = 'transparent'
+  } else {
+    ctx.fillText(text, x, y)
+  }
 }
 
 /**
@@ -140,11 +158,22 @@ export function drawScrollingText(ctx, text, x, y, width, offset, fontSize = 12,
   const textWidth = ctx.measureText(text).width
   const gap = 60 // gap between repeated text
 
+  // Modern mode: subtle glow effect on scrolling text
+  if (ctx.imageSmoothingEnabled) {
+    ctx.shadowColor = color
+    ctx.shadowBlur = 4
+  }
+
   ctx.fillText(text, x - offset, y)
 
   // Second copy for seamless looping
   if (offset > 0) {
     ctx.fillText(text, x - offset + textWidth + gap, y)
+  }
+
+  if (ctx.imageSmoothingEnabled) {
+    ctx.shadowBlur = 0
+    ctx.shadowColor = 'transparent'
   }
 
   ctx.restore()

@@ -6,12 +6,14 @@ import { useSkinStore } from '@/stores/useSkinStore'
 import { setupCanvas, drawBitmapText, drawScrollingText, measureText } from '@/engine/skinRenderer'
 
 const canvasRef = ref(null)
+const containerRef = ref(null)
 const playerStore = usePlayerStore()
 const playlistStore = usePlaylistStore()
 const skinStore = useSkinStore()
 
-const CANVAS_WIDTH = 800
+let canvasWidth = 800
 const CANVAS_HEIGHT = 110
+let resizeObserver = null
 
 const showRemaining = ref(false)
 let scrollOffset = 0
@@ -90,19 +92,19 @@ function formatTimeDisplay(seconds) {
 function draw() {
   const canvas = canvasRef.value
   if (!canvas) return
-  const ctx = setupCanvas(canvas, CANVAS_WIDTH, CANVAS_HEIGHT, skinStore.renderMode)
+  const ctx = setupCanvas(canvas, canvasWidth, CANVAS_HEIGHT, skinStore.renderMode)
 
   // Display background (black)
   ctx.fillStyle = skinStore.colors.displayBg
-  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+  ctx.fillRect(0, 0, canvasWidth, CANVAS_HEIGHT)
 
   // Subtle inset border
   ctx.fillStyle = '#111'
-  ctx.fillRect(0, 0, CANVAS_WIDTH, 1)
+  ctx.fillRect(0, 0, canvasWidth, 1)
   ctx.fillRect(0, 0, 1, CANVAS_HEIGHT)
   ctx.fillStyle = '#333'
-  ctx.fillRect(0, CANVAS_HEIGHT - 1, CANVAS_WIDTH, 1)
-  ctx.fillRect(CANVAS_WIDTH - 1, 0, 1, CANVAS_HEIGHT)
+  ctx.fillRect(0, CANVAS_HEIGHT - 1, canvasWidth, 1)
+  ctx.fillRect(canvasWidth - 1, 0, 1, CANVAS_HEIGHT)
 
   // Title zone: feedback message or scrolling title
   if (playerStore.feedbackMessage) {
@@ -120,7 +122,7 @@ function draw() {
       ctx,
       scrollingTitle.value,
       12, 10,
-      CANVAS_WIDTH - 24,
+      canvasWidth - 24,
       scrollOffset,
       TITLE_FONT_SIZE, null,
       skinStore.colors.textPrimary
@@ -155,7 +157,7 @@ function animateScroll() {
 
 function handleCanvasClick(event) {
   const rect = canvasRef.value.getBoundingClientRect()
-  const x = (event.clientX - rect.left) * (CANVAS_WIDTH / rect.width)
+  const x = (event.clientX - rect.left) * (canvasWidth / rect.width)
   const y = (event.clientY - rect.top) * (CANVAS_HEIGHT / rect.height)
 
   if (x >= TIME_ZONE.x && x <= TIME_ZONE.x + TIME_ZONE.w &&
@@ -166,16 +168,31 @@ function handleCanvasClick(event) {
 }
 
 onMounted(() => {
+  // Observe container width to make canvas responsive
+  if (containerRef.value) {
+    resizeObserver = new ResizeObserver((entries) => {
+      const { width } = entries[0].contentRect
+      if (width > 0 && Math.abs(width - canvasWidth) > 1) {
+        canvasWidth = Math.round(width)
+        draw()
+      }
+    })
+    resizeObserver.observe(containerRef.value)
+  }
   animateScroll()
 })
 
 onUnmounted(() => {
   if (animationFrameId) cancelAnimationFrame(animationFrameId)
+  if (resizeObserver) {
+    resizeObserver.disconnect()
+    resizeObserver = null
+  }
 })
 </script>
 
 <template>
-  <div class="canvas-wrapper">
+  <div ref="containerRef" class="canvas-wrapper">
     <canvas
       ref="canvasRef"
       class="display-canvas"

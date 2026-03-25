@@ -17,7 +17,39 @@
   z-index: 5;
 }
 
-/* Respect reduced motion preference */
+/* Render mode: retro — no transitions, pixelated rendering */
+.render-retro *,
+.render-retro *::before,
+.render-retro *::after {
+  transition: none !important;
+}
+
+.render-retro canvas {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.render-retro {
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: unset;
+}
+
+/* Render mode: modern — smooth transitions, anti-aliased rendering */
+.render-modern .prefs-overlay,
+.render-modern .overlay-panel {
+  transition: opacity 150ms ease-out;
+}
+
+.render-modern canvas {
+  image-rendering: auto;
+}
+
+.render-modern {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Respect reduced motion preference — overrides modern mode */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

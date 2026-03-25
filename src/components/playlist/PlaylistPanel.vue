@@ -211,8 +211,8 @@ function trackAriaLabel(track, index) {
 .playlist-panel {
   font-family: 'Courier New', monospace;
   font-size: 11px;
+  flex: 1;
   min-height: 120px;
-  max-height: 300px;
   overflow-y: auto;
   border-top: 1px solid #3F3F44;
   position: relative;

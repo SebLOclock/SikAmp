@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useSkinStore } from '@/stores/useSkinStore'
 import { usePlayerStore } from '@/stores/usePlayerStore'
 import { usePlaylistStore } from '@/stores/usePlaylistStore'
@@ -7,6 +7,7 @@ import { usePreferencesStore } from '@/stores/usePreferencesStore'
 import { useKeyboardShortcuts, registerShortcutCallbacks } from '@/composables/useKeyboardShortcuts'
 import { useFileDrop } from '@/composables/useFileDrop'
 import { useJingle } from '@/composables/useJingle'
+import { useWindowState } from '@/composables/useWindowState'
 import '@/assets/focus-styles.css'
 import PlayerDisplay from '@/components/player/PlayerDisplay.vue'
 import SeekBar from '@/components/player/SeekBar.vue'
@@ -16,17 +17,26 @@ import ActionBar from '@/components/player/ActionBar.vue'
 import PlaylistPanel from '@/components/playlist/PlaylistPanel.vue'
 import PreferencesPanel from '@/components/shared/PreferencesPanel.vue'
 
-const showPreferences = ref(false)
+const activeOverlay = ref(null) // null | 'preferences' | 'skins'
 const actionBarRef = ref(null)
 const skinStore = useSkinStore()
 const playerStore = usePlayerStore()
 const playlistStore = usePlaylistStore()
 const preferencesStore = usePreferencesStore()
 const { playJingle } = useJingle()
+const { restoreState: restoreWindowState, listenToChanges: listenWindowChanges, destroy: destroyWindowListeners } = useWindowState()
 useKeyboardShortcuts()
 
+function toggleOverlay(name) {
+  activeOverlay.value = activeOverlay.value === name ? null : name
+}
+
+function closeOverlay() {
+  activeOverlay.value = null
+}
+
 registerShortcutCallbacks({
-  onEscape: () => { showPreferences.value = false },
+  onEscape: () => { closeOverlay() },
   onToggleShuffle: () => { actionBarRef.value?.executeAction('shuffle'); actionBarRef.value?.draw?.() },
   onToggleRepeat: () => { actionBarRef.value?.executeAction('repeat'); actionBarRef.value?.draw?.() },
   onToggleCrossfade: () => { actionBarRef.value?.executeAction('crossfade'); actionBarRef.value?.draw?.() },
@@ -81,6 +91,10 @@ async function handleFilesDropped(paths) {
   }
 }
 
+const renderModeClass = computed(() =>
+  skinStore.renderMode === 'modern' ? 'render-modern' : 'render-retro'
+)
+
 function handlePrev() {
   playlistStore.playPrevious()
 }
@@ -94,12 +108,29 @@ onMounted(() => {
   skinStore.loadDefaultSkin()
   playlistStore.init()
   playerStore.restoreVolume()
-  preferencesStore.loadPreferences().then(() => playJingle())
+  preferencesStore.loadPreferences().then(async () => {
+    // Apply saved render mode to skin store
+    skinStore.setRenderMode(preferencesStore.renderMode)
+    // Auto-detect scale factor if not already saved
+    if (preferencesStore.scaleFactor === null) {
+      const dpr = window.devicePixelRatio || 1
+      const scale = dpr >= 3 ? 3 : dpr >= 2 ? 2 : 1
+      preferencesStore.setScaleFactor(scale)
+    }
+    // Restore window size/position then listen for changes
+    await restoreWindowState()
+    listenWindowChanges()
+    playJingle()
+  })
+})
+
+onUnmounted(() => {
+  destroyWindowListeners()
 })
 </script>
 
 <template>
-  <main class="app" :style="{ backgroundColor: skinStore.colors.background }">
+  <main class="app" :class="renderModeClass" :style="{ backgroundColor: skinStore.colors.background }">
     <div class="player-window">
       <PlayerDisplay />
       <SeekBar />
@@ -107,10 +138,10 @@ onMounted(() => {
         <TransportControls @prev="handlePrev" @next="handleNext" />
         <VolumeSlider />
       </div>
-      <ActionBar ref="actionBarRef" @prefs="showPreferences = !showPreferences" />
+      <ActionBar ref="actionBarRef" @prefs="toggleOverlay('preferences')" />
     </div>
     <PlaylistPanel :is-dragging="isDragging" />
-    <PreferencesPanel :visible="showPreferences" @close="showPreferences = false" />
+    <PreferencesPanel :visible="activeOverlay === 'preferences'" @close="closeOverlay" />
   </main>
 </template>
 
@@ -141,13 +172,14 @@ onMounted(() => {
   padding: 0;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
 }
 
 .player-window {
   display: flex;
   flex-direction: column;
   width: 100%;
+  flex-shrink: 0;
 }
 
 .controls-row {

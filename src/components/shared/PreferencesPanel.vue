@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick } from 'vue'
 import { useSkinStore } from '@/stores/useSkinStore'
 import { usePreferencesStore } from '@/stores/usePreferencesStore'
 import { useFocusTrap } from '@/composables/useFocusTrap'
@@ -30,13 +30,22 @@ watch(() => props.visible, async (v) => {
 function handleToggleJingle() {
   preferencesStore.toggleJingle()
 }
+
+const isModernMode = computed(() => skinStore.renderMode === 'modern')
+
+function handleToggleRenderMode() {
+  const newMode = isModernMode.value ? 'retro' : 'modern'
+  skinStore.setRenderMode(newMode)
+  preferencesStore.setRenderMode(newMode)
+}
 </script>
 
 <template>
+  <Transition :name="isModernMode ? 'overlay-fade' : ''">
   <div
     v-if="visible"
     ref="overlayRef"
-    class="prefs-overlay"
+    class="prefs-overlay overlay-panel"
     tabindex="-1"
     :style="{ backgroundColor: skinStore.colors.displayBg + 'EE' }"
     @click.self="emit('close')"
@@ -70,9 +79,31 @@ function handleToggleJingle() {
             <span class="toggle-knob" :style="{ backgroundColor: skinStore.colors.background }" />
           </button>
         </label>
+        <label class="pref-row" :style="{ color: skinStore.colors.textSecondary }">
+          <span>Mode de rendu</span>
+          <div class="render-mode-toggle">
+            <span class="render-mode-label" :style="{ color: !isModernMode ? skinStore.colors.textPrimary : skinStore.colors.disabledControls }">Rétro</span>
+            <button
+              role="switch"
+              :aria-checked="isModernMode"
+              :aria-label="'Mode de rendu : ' + (isModernMode ? 'Moderne' : 'Rétro')"
+              class="toggle-switch"
+              :class="{ active: isModernMode }"
+              :style="{
+                backgroundColor: isModernMode ? skinStore.colors.textPrimary : skinStore.colors.disabledControls,
+                borderColor: skinStore.colors.accentMetallic
+              }"
+              @click="handleToggleRenderMode"
+            >
+              <span class="toggle-knob" :style="{ backgroundColor: skinStore.colors.background }" />
+            </button>
+            <span class="render-mode-label" :style="{ color: isModernMode ? skinStore.colors.textPrimary : skinStore.colors.disabledControls }">Moderne</span>
+          </div>
+        </label>
       </div>
     </div>
   </div>
+  </Transition>
 </template>
 
 <style scoped>
@@ -155,5 +186,28 @@ function handleToggleJingle() {
 
 .toggle-switch.active .toggle-knob {
   transform: translateX(18px);
+}
+
+.render-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.render-mode-label {
+  font-size: 10px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
+/* Modern mode fade transition (150ms) */
+.overlay-fade-enter-active,
+.overlay-fade-leave-active {
+  transition: opacity 150ms ease-out;
+}
+
+.overlay-fade-enter-from,
+.overlay-fade-leave-to {
+  opacity: 0;
 }
 </style>
