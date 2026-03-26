@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SikAmp — Et si Winamp était sorti en 2026 ?</title>
+  <meta name="description" content="SikAmp est un lecteur audio desktop open source inspiré de Winamp, avec crossfade, skins personnalisés et une esthétique Y2K. Disponible sur Windows, macOS et Linux.">
+  <meta property="og:title" content="SikAmp — Et si Winamp était sorti en 2026 ?">
+  <meta property="og:description" content="Lecteur audio desktop open source inspiré de Winamp. Crossfade, skins, offline-first.">
+  <meta property="og:image" content="https://sikamp.sebastienlemoine.fr/assets/og-image.png">
+  <meta property="og:url" content="https://sikamp.sebastienlemoine.fr/">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header class="hero">
+    <img src="sikamp-logo-transparent.png" alt="SikAmp logo" class="hero__logo" width="200" height="200">
+    <h1 class="hero__title">SikAmp</h1>
+    <p class="hero__pitch">Et si Winamp était sorti en 2026 ?</p>
+    <p class="hero__description">
+      Lecteur audio desktop open source inspiré de Winamp 2.x.<br>
+      Crossfade, skins personnalisés, 100 % offline.
+    </p>
+  </header>
+
+  <main>
+    <section class="download" id="download">
+      <h2 class="section-title">Télécharger</h2>
+      <p class="download__version" id="release-version">v1.0.0</p>
+      <div class="download__buttons">
+        <a id="dl-windows" class="download__btn download__btn--windows" href="https://github.com/SebLOclock/SikAmp/releases/download/v1.0.0/SikAmp_1.0.0_x64-setup.exe">
+          <span class="download__btn-icon" aria-hidden="true">⊞</span>
+          <span class="download__btn-label">Windows</span>
+          <span class="download__btn-format">.exe</span>
+        </a>
+        <a id="dl-macos" class="download__btn download__btn--macos" href="https://github.com/SebLOclock/SikAmp/releases/download/v1.0.0/SikAmp_1.0.0_universal.dmg">
+          <span class="download__btn-icon" aria-hidden="true">⌘</span>
+          <span class="download__btn-label">macOS</span>
+          <span class="download__btn-format">.dmg</span>
+        </a>
+        <a id="dl-linux" class="download__btn download__btn--linux" href="https://github.com/SebLOclock/SikAmp/releases/download/v1.0.0/SikAmp_1.0.0_amd64.deb">
+          <span class="download__btn-icon" aria-hidden="true">🐧</span>
+          <span class="download__btn-label">Linux</span>
+          <span class="download__btn-format">.deb</span>
+        </a>
+      </div>
+      <p class="download__mobile-note">Application desktop uniquement</p>
+      <p class="download__alt">
+        <a href="https://github.com/SebLOclock/SikAmp/releases/latest">Tous les formats sur GitHub Releases</a>
+      </p>
+    </section>
+
+    <section class="features">
+      <h2 class="section-title">Fonctionnalités</h2>
+      <div class="features__grid">
+        <div class="features__card">
+          <span class="features__icon" aria-hidden="true">🎵</span>
+          <h3>Crossfade</h3>
+          <p>Transition fluide equal-power entre les morceaux. Durée configurable.</p>
+        </div>
+        <div class="features__card">
+          <span class="features__icon" aria-hidden="true">🎨</span>
+          <h3>Skins .wsz</h3>
+          <p>Chargez vos skins Winamp classiques. Le look que vous aimez, en haute définition.</p>
+        </div>
+        <div class="features__card">
+          <span class="features__icon" aria-hidden="true">📴</span>
+          <h3>100 % Offline</h3>
+          <p>Fonctionne sans internet. Vos fichiers, votre musique, point final.</p>
+        </div>
+        <div class="features__card">
+          <span class="features__icon" aria-hidden="true">💻</span>
+          <h3>Multi-plateforme</h3>
+          <p>Windows, macOS et Linux. Un seul lecteur partout.</p>
+        </div>
+        <div class="features__card">
+          <span class="features__icon" aria-hidden="true">📂</span>
+          <h3>Playlists M3U</h3>
+          <p>Créez, éditez et sauvegardez vos playlists au format standard.</p>
+        </div>
+        <div class="features__card">
+          <span class="features__icon" aria-hidden="true">🔓</span>
+          <h3>Open Source</h3>
+          <p>Code ouvert sur GitHub. Contribuez, forkez, personnalisez.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>
+      <a href="https://github.com/SebLOclock/SikAmp">GitHub</a>
+      ·
+      SikAmp est un projet open source sous licence MIT
+    </p>
+  </footer>
+
+  <script>
+    (function () {
+      var ua = navigator.userAgent;
+      var os = null;
+      if (ua.indexOf('Win') !== -1) os = 'windows';
+      else if (ua.indexOf('Mac') !== -1) os = 'macos';
+      else if (ua.indexOf('Linux') !== -1) os = 'linux';
+
+      if (os) {
+        var btn = document.getElementById('dl-' + os);
+        if (btn) btn.classList.add('download__btn--detected');
+      }
+    })();
+  </script>
+
+</body>
+</html>

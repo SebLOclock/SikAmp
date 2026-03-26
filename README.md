@@ -39,8 +39,8 @@
 ## Installation
 
 ```bash
-git clone https://github.com/SebLOclock/winamp-sik.git
-cd winamp-sik
+git clone https://github.com/SebLOclock/SikAmp.git
+cd SikAmp
 npm install
 ```
 
@@ -76,7 +76,7 @@ Genere les binaires natifs et installeurs dans `src-tauri/target/release/bundle/
 ## Structure du projet
 
 ```
-winamp-sik/
+SikAmp/
 ├── src/                    # Frontend Vue.js
 │   ├── components/
 │   │   ├── player/         # TitleBar, Display, Controls, Seek, Volume

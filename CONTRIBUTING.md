@@ -13,8 +13,8 @@ Merci de ton intérêt pour SikAmp ! Ce guide t'aidera à démarrer.
 ### Installation
 
 ```bash
-git clone https://github.com/SebLOclock/winamp-sik.git
-cd winamp-sik
+git clone https://github.com/SebLOclock/SikAmp.git
+cd SikAmp
 npm ci
 ```
 

@@ -31,7 +31,7 @@
   "plugins": {
     "updater": {
       "endpoints": [
-        "https://github.com/SebLOclock/winamp-sik/releases/latest/download/latest.json"
+        "https://github.com/SebLOclock/SikAmp/releases/latest/download/latest.json"
       ],
       "active": true
     }

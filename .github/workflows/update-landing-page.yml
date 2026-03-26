@@ -1,0 +1,72 @@
+name: Update Landing Page
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  update-links:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Update download links in landing page
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#v}"
+
+          echo "Updating landing page for release $TAG (version $VERSION)"
+
+          # Fetch release asset names
+          ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name')
+          echo "Release assets:"
+          echo "$ASSETS"
+
+          # Find asset filenames by platform
+          WIN_EXE=$(echo "$ASSETS" | grep -i '\.exe$' | head -1)
+          MAC_DMG=$(echo "$ASSETS" | grep -i '\.dmg$' | head -1)
+          LINUX_DEB=$(echo "$ASSETS" | grep -i '\.deb$' | head -1)
+
+          REPO="SebLOclock/SikAmp"
+          BASE_URL="https://github.com/$REPO/releases/download/$TAG"
+
+          # Update download links in index.html
+          if [ -n "$WIN_EXE" ]; then
+            sed -i "s|id=\"dl-windows\" class=\"download__btn download__btn--windows\" href=\"[^\"]*\"|id=\"dl-windows\" class=\"download__btn download__btn--windows\" href=\"$BASE_URL/$WIN_EXE\"|" docs/index.html
+            echo "Updated Windows link: $WIN_EXE"
+          fi
+
+          if [ -n "$MAC_DMG" ]; then
+            sed -i "s|id=\"dl-macos\" class=\"download__btn download__btn--macos\" href=\"[^\"]*\"|id=\"dl-macos\" class=\"download__btn download__btn--macos\" href=\"$BASE_URL/$MAC_DMG\"|" docs/index.html
+            echo "Updated macOS link: $MAC_DMG"
+          fi
+
+          if [ -n "$LINUX_DEB" ]; then
+            sed -i "s|id=\"dl-linux\" class=\"download__btn download__btn--linux\" href=\"[^\"]*\"|id=\"dl-linux\" class=\"download__btn download__btn--linux\" href=\"$BASE_URL/$LINUX_DEB\"|" docs/index.html
+            echo "Updated Linux link: $LINUX_DEB"
+          fi
+
+          # Update displayed version
+          sed -i "s|id=\"release-version\">[^<]*<|id=\"release-version\">$TAG<|" docs/index.html
+
+          echo "Landing page updated for $TAG"
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/index.html
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+          git commit -m "chore: update landing page download links for ${{ github.event.release.tag_name }}"
+          git push
