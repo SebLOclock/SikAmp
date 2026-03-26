@@ -35,7 +35,8 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-03-21
-last_updated: '2026-03-25'
+last_updated: '2026-03-26'
+# Updated: story 5-1 moved to ready-for-dev, epic-5 moved to in-progress
 # Updated: epic-4-retrospective moved to done
 # Updated: story 4-2 moved to in-progress
 # Updated: story 4-1 moved to in-progress
@@ -80,9 +81,9 @@ development_status:
   epic-4-retrospective: done
 
   # Epic 5 : Distribution, Installation & Mises a Jour
-  epic-5: backlog
-  5-1-pipeline-ci-cd-multi-plateforme: backlog
-  5-2-publication-de-releases: backlog
+  epic-5: in-progress
+  5-1-pipeline-ci-cd-multi-plateforme: done
+  5-2-publication-de-releases: in-progress
   5-3-auto-update-signe: backlog
   epic-5-retrospective: optional
 
