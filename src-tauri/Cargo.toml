@@ -1,6 +1,6 @@
 [package]
 name = "sikamp"
-version = "1.0.0"
+version = "1.0.1"
 description = "SikAmp - Winamp-inspired audio player"
 authors = ["Seb"]
 edition = "2021"
