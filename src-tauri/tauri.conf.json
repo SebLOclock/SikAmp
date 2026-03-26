@@ -33,7 +33,7 @@
       "endpoints": [
         "https://github.com/SebLOclock/SikAmp/releases/latest/download/latest.json"
       ],
-      "active": true
+      "active": false
     }
   },
   "bundle": {
