@@ -45,6 +45,11 @@
           <span class="download__btn-label">Linux</span>
           <span class="download__btn-format">.deb</span>
         </a>
+        <a id="dl-linux-appimage" class="download__btn download__btn--linux" href="https://github.com/SebLOclock/SikAmp/releases/download/v1.0.0/SikAmp_1.0.0_amd64.AppImage">
+          <span class="download__btn-icon" aria-hidden="true">🐧</span>
+          <span class="download__btn-label">Linux</span>
+          <span class="download__btn-format">.AppImage</span>
+        </a>
       </div>
       <p class="download__mobile-note">Application desktop uniquement</p>
       <p class="download__alt">
@@ -108,6 +113,10 @@
       if (os) {
         var btn = document.getElementById('dl-' + os);
         if (btn) btn.classList.add('download__btn--detected');
+        if (os === 'linux') {
+          var appimg = document.getElementById('dl-linux-appimage');
+          if (appimg) appimg.classList.add('download__btn--detected');
+        }
       }
     })();
   </script>

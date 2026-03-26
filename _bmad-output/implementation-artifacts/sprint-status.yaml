@@ -36,7 +36,7 @@
 
 generated: 2026-03-21
 last_updated: '2026-03-26'
-# Updated: story 5-1 moved to ready-for-dev, epic-5 moved to in-progress
+# Updated: story 6-1 moved to ready-for-dev, epic-6 moved to in-progress, story 5-2 moved to done
 # Updated: epic-4-retrospective moved to done
 # Updated: story 4-2 moved to in-progress
 # Updated: story 4-1 moved to in-progress
@@ -83,13 +83,13 @@ development_status:
   # Epic 5 : Distribution, Installation & Mises a Jour
   epic-5: in-progress
   5-1-pipeline-ci-cd-multi-plateforme: done
-  5-2-publication-de-releases: in-progress
+  5-2-publication-de-releases: done
   5-3-auto-update-signe: backlog
   epic-5-retrospective: optional
 
   # Epic 6 : Landing Page
-  epic-6: backlog
-  6-1-landing-page-statique-avec-telechargement-par-os: backlog
+  epic-6: in-progress
+  6-1-landing-page-statique-avec-telechargement-par-os: review
   epic-6-retrospective: optional
 
   # Epic 7 : Formulaire de Satisfaction

@@ -24,9 +24,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${{ github.event.release.tag_name }}"
-          VERSION="${TAG#v}"
 
-          echo "Updating landing page for release $TAG (version $VERSION)"
+          echo "Updating landing page for release $TAG"
 
           # Fetch release asset names
           ASSETS=$(gh release view "$TAG" --json assets --jq '.assets[].name')
@@ -37,6 +36,7 @@ jobs:
           WIN_EXE=$(echo "$ASSETS" | grep -i '\.exe$' | head -1)
           MAC_DMG=$(echo "$ASSETS" | grep -i '\.dmg$' | head -1)
           LINUX_DEB=$(echo "$ASSETS" | grep -i '\.deb$' | head -1)
+          LINUX_APPIMAGE=$(echo "$ASSETS" | grep -i '\.appimage$' | head -1)
 
           REPO="SebLOclock/SikAmp"
           BASE_URL="https://github.com/$REPO/releases/download/$TAG"
@@ -54,7 +54,12 @@ jobs:
 
           if [ -n "$LINUX_DEB" ]; then
             sed -i "s|id=\"dl-linux\" class=\"download__btn download__btn--linux\" href=\"[^\"]*\"|id=\"dl-linux\" class=\"download__btn download__btn--linux\" href=\"$BASE_URL/$LINUX_DEB\"|" docs/index.html
-            echo "Updated Linux link: $LINUX_DEB"
+            echo "Updated Linux (.deb) link: $LINUX_DEB"
+          fi
+
+          if [ -n "$LINUX_APPIMAGE" ]; then
+            sed -i "s|id=\"dl-linux-appimage\" class=\"download__btn download__btn--linux\" href=\"[^\"]*\"|id=\"dl-linux-appimage\" class=\"download__btn download__btn--linux\" href=\"$BASE_URL/$LINUX_APPIMAGE\"|" docs/index.html
+            echo "Updated Linux (AppImage) link: $LINUX_APPIMAGE"
           fi
 
           # Update displayed version
